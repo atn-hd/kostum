@@ -105,7 +105,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="hero-section" style={{ padding: '60px 40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <h1 className="hero-title" style={{ fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif', fontSize: 44, fontWeight: 300, letterSpacing: '0.05em', lineHeight: 1, color: text }}>
-          le vestiaire
+          LE VESTIAIRE
         </h1>
         <p className="hero-sub" style={{ fontSize: 12, letterSpacing: '0.12em', color: muted, textAlign: 'right', lineHeight: 2 }}>
           Fashion and Costumes<br />collection for rent
