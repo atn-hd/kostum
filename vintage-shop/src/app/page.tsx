@@ -9,69 +9,75 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [filtered, setFiltered] = useState<Product[]>([])
   const [activeFilters, setActiveFilters] = useState<string[]>(['TOUT'])
+  const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-
-  const filterOptions = ['TOUT', 'CHEMISES', 'VESTES', 'ROBES', 'PANTALONS']
+  const [colors, setColors] = useState({ bg: '#0a0a0a', text: '#e8e4dc' })
 
   useEffect(() => {
-    loadProducts()
+    loadAll()
   }, [])
 
-  const loadProducts = async () => {
-    const { data } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_available', true)
-      .order('created_at', { ascending: false })
-    const list = data || []
+  const loadAll = async () => {
+    const [productsRes, categoriesRes, settingsRes] = await Promise.all([
+      supabase.from('products').select('*').eq('is_available', true).order('created_at', { ascending: false }),
+      supabase.from('categories').select('name').order('name'),
+      supabase.from('settings').select('*'),
+    ])
+
+    const list = productsRes.data || []
     setProducts(list)
     setFiltered(list)
+
+    if (categoriesRes.data) setCategories(categoriesRes.data.map(c => c.name))
+
+    if (settingsRes.data) {
+      const bg = settingsRes.data.find(s => s.key === 'bg_color')
+      const text = settingsRes.data.find(s => s.key === 'text_color')
+      setColors({ bg: bg?.value || '#0a0a0a', text: text?.value || '#e8e4dc' })
+    }
+
     setLoading(false)
   }
 
-  const toggleFilter = (f: string) => {
+  const toggleFilter = (f: string, allProducts: Product[] = products) => {
     if (f === 'TOUT') {
       setActiveFilters(['TOUT'])
-      setFiltered(products)
+      setFiltered(allProducts)
       return
     }
-    const next = activeFilters.filter(x => x !== 'TOUT').includes(f)
-      ? activeFilters.filter(x => x !== f)
-      : [...activeFilters.filter(x => x !== 'TOUT'), f]
+    const current = activeFilters.filter(x => x !== 'TOUT')
+    const next = current.includes(f) ? current.filter(x => x !== f) : [...current, f]
 
     if (next.length === 0) {
       setActiveFilters(['TOUT'])
-      setFiltered(products)
+      setFiltered(allProducts)
     } else {
       setActiveFilters(next)
-      setFiltered(products.filter(p =>
-        next.some(f => p.category?.toUpperCase() === f || p.color?.toUpperCase() === f || p.designer?.toUpperCase() === f)
+      setFiltered(allProducts.filter(p =>
+        next.some(filter => p.category?.toUpperCase() === filter.toUpperCase())
       ))
     }
   }
 
+  const bg = colors.bg
+  const text = colors.text
+  const muted = '#666'
+  const border = '#1a1a1a'
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+    <div style={{ minHeight: '100vh', background: bg }}>
       {/* Header */}
-      <header style={{
-        borderBottom: '1px solid #1a1a1a',
-        padding: '24px 40px',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between'
-      }}>
+      <header style={{ borderBottom: `1px solid ${border}`, padding: '24px 40px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 400, letterSpacing: '0.25em', lineHeight: 1 }}>KOSTUM</div>
-          <div style={{ fontSize: 10, letterSpacing: '0.3em', color: '#555', marginTop: 4 }}>ARCHIVES</div>
+          <div style={{ fontSize: 22, fontWeight: 400, letterSpacing: '0.25em', lineHeight: 1, color: text }}>KOSTUM</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.3em', color: muted, marginTop: 4 }}>ARCHIVES</div>
         </div>
         <nav style={{ display: 'flex', gap: 40, paddingTop: 4 }}>
           {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`} style={{
-              fontSize: 11, letterSpacing: '0.2em', color: '#666', textDecoration: 'none',
-              transition: 'color 0.2s'
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#e8e4dc')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#666')}
+            <a key={item} href={`#${item.toLowerCase()}`}
+              style={{ fontSize: 11, letterSpacing: '0.2em', color: muted, textDecoration: 'none', transition: 'color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = text)}
+              onMouseLeave={e => (e.currentTarget.style.color = muted)}
             >{item}</a>
           ))}
         </nav>
@@ -79,16 +85,16 @@ export default function HomePage() {
 
       {/* Hero */}
       <section style={{ padding: '60px 40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <h1 style={{ fontStyle: 'italic', fontSize: 64, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1, color: '#e8e4dc' }}>
+        <h1 style={{ fontStyle: 'italic', fontSize: 64, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1, color: text }}>
           le vestiaire
         </h1>
-        <p style={{ fontSize: 12, letterSpacing: '0.12em', color: '#555', textAlign: 'right', lineHeight: 2 }}>
+        <p style={{ fontSize: 12, letterSpacing: '0.12em', color: muted, textAlign: 'right', lineHeight: 2 }}>
           Location de vêtements<br />pour événements<br />& shootings
         </p>
       </section>
 
-      {/* Filters bar */}
-      <section id="vestiaire" style={{ padding: '0 40px 20px', borderBottom: '1px solid #1a1a1a' }}>
+      {/* Filters */}
+      <section id="vestiaire" style={{ padding: '0 40px 20px', borderBottom: `1px solid ${border}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>
             COLLECTION — {filtered.length} PIÈCES
@@ -96,21 +102,15 @@ export default function HomePage() {
           <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>FILTRER</span>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {filterOptions.map(f => (
-            <button
-              key={f}
-              onClick={() => toggleFilter(f)}
+          {['TOUT', ...categories].map(f => (
+            <button key={f} onClick={() => toggleFilter(f)}
               style={{
-                background: activeFilters.includes(f) ? '#e8e4dc' : 'transparent',
+                background: activeFilters.includes(f) ? text : 'transparent',
                 border: '1px solid',
-                borderColor: activeFilters.includes(f) ? '#e8e4dc' : '#333',
-                color: activeFilters.includes(f) ? '#0a0a0a' : '#666',
-                padding: '6px 14px',
-                fontSize: 11,
-                letterSpacing: '0.15em',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                fontFamily: 'inherit',
+                borderColor: activeFilters.includes(f) ? text : '#333',
+                color: activeFilters.includes(f) ? bg : muted,
+                padding: '6px 14px', fontSize: 11, letterSpacing: '0.15em',
+                cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit',
               }}
             >{f}</button>
           ))}
@@ -118,110 +118,68 @@ export default function HomePage() {
       </section>
 
       {/* Grid */}
-      <section style={{ padding: '0' }}>
+      <section>
         {loading ? (
-          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>
-            CHARGEMENT...
-          </div>
+          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>CHARGEMENT...</div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>
-            AUCUNE PIÈCE DISPONIBLE
-          </div>
+          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>AUCUNE PIÈCE DISPONIBLE</div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-          }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {filtered.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+              <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} />
             ))}
           </div>
         )}
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid #1a1a1a', padding: '40px', marginTop: 80 }}>
+      <footer style={{ borderTop: `1px solid ${border}`, padding: '40px', marginTop: 80 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#333' }}>KOSTUM ARCHIVES</span>
-          <Link href="/admin" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333', textDecoration: 'none' }}>
-            BACK OFFICE
-          </Link>
+          <Link href="/admin" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333', textDecoration: 'none' }}>BACK OFFICE</Link>
         </div>
       </footer>
     </div>
   )
 }
 
-function ProductCard({ product, index }: { product: Product; index: number }) {
+function ProductCard({ product, index, bg, text, border }: { product: Product; index: number; bg: string; text: string; border: string }) {
   const [hovered, setHovered] = useState(false)
   const firstImage = product.images?.[0]
   const secondImage = product.images?.[1]
-
-  const borderRight = (index + 1) % 3 !== 0 ? '1px solid #1a1a1a' : 'none'
-  const borderBottom = '1px solid #1a1a1a'
 
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        borderRight,
-        borderBottom,
+        borderRight: (index + 1) % 3 !== 0 ? `1px solid ${border}` : 'none',
+        borderBottom: `1px solid ${border}`,
         cursor: 'pointer',
+        background: bg,
       }}
     >
-      {/* Image */}
       <div style={{ position: 'relative', aspectRatio: '3/4', background: '#111', overflow: 'hidden' }}>
         {firstImage ? (
           <>
-            <Image
-              src={firstImage}
-              alt={product.name}
-              fill
-              style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }}
-            />
+            <Image src={firstImage} alt={product.name} fill style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }} />
             {secondImage && (
-              <Image
-                src={secondImage}
-                alt={product.name}
-                fill
-                style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }}
-              />
+              <Image src={secondImage} alt={product.name} fill style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }} />
             )}
           </>
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#222', fontSize: 48 }}>
-            —
-          </div>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#222', fontSize: 48 }}>—</div>
         )}
       </div>
-
-      {/* Info */}
       <div style={{ padding: '16px 20px 20px' }}>
-        <div style={{ fontSize: 12, letterSpacing: '0.15em', color: '#e8e4dc', marginBottom: 4 }}>
-          {product.name?.toUpperCase()}
-        </div>
+        <div style={{ fontSize: 12, letterSpacing: '0.15em', color: text, marginBottom: 4 }}>{product.name?.toUpperCase()}</div>
         {product.designer && (
-          <div style={{ fontSize: 11, letterSpacing: '0.1em', color: '#555', marginBottom: 12 }}>
-            {product.designer?.toUpperCase()}
-          </div>
+          <div style={{ fontSize: 11, letterSpacing: '0.1em', color: '#555', marginBottom: 12 }}>{product.designer?.toUpperCase()}</div>
         )}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {product.size && (
-            <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>
-              {product.size}
-            </span>
-          )}
-          {product.color && (
-            <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>
-              {product.color?.toUpperCase()}
-            </span>
-          )}
-          {product.category && (
-            <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>
-              {product.category?.toUpperCase()}
-            </span>
-          )}
+          {product.size && <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>{product.size}</span>}
+          {product.color && <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>{product.color?.toUpperCase()}</span>}
+          {product.category && <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>{product.category?.toUpperCase()}</span>}
         </div>
       </div>
     </div>
