@@ -4,151 +4,226 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const CATEGORIES = ['CHEMISE', 'VESTE', 'ROBE', 'PANTALON', 'MANTEAU', 'ACCESSOIRE']
+const DESIGNERS = ['JEAN PAUL GAULTIER', 'MUGLER', 'MONTANA', 'ALAÏA', 'VERSACE', 'AUTRE']
+const COLORS = ['NOIR', 'BLANC', 'BLEU', 'ROUGE', 'VERT', 'BEIGE', 'GRIS', 'AUTRE']
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '36', '38', '40', '42', '44', 'UNIQUE']
+
 export default function NouvelArticlePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [images, setImages] = useState<string[]>([])
+  const [dragging, setDragging] = useState(false)
   const [form, setForm] = useState({
-    name: '', description: '', price: '', category: 'tops',
-    size: 'M', condition: 'Bon état', decade: '1990', is_available: true
+    name: '', description: '', price: '',
+    category: '', designer: '', size: '', color: '',
+    is_available: true
   })
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+  const uploadFiles = async (files: FileList | File[]) => {
     setUploading(true)
-
-    const uploadedUrls: string[] = []
+    const urls: string[] = []
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
-      const { error } = await supabase.storage
-        .from('products')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false })
-
+      const { error } = await supabase.storage.from('products').upload(fileName, file)
       if (!error) {
         const { data } = supabase.storage.from('products').getPublicUrl(fileName)
-        uploadedUrls.push(data.publicUrl)
+        urls.push(data.publicUrl)
       }
     }
-
-    setImages(prev => [...prev, ...uploadedUrls])
+    setImages(prev => [...prev, ...urls])
     setUploading(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragging(false)
+    if (e.dataTransfer.files) uploadFiles(e.dataTransfer.files)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-
     const { error } = await supabase.from('products').insert([{
       ...form,
-      price: parseFloat(form.price),
+      price: form.price ? parseFloat(form.price) : null,
       images,
     }])
-
     if (!error) {
       router.push('/admin/dashboard')
     } else {
-      alert('Erreur lors de la création : ' + error.message)
+      alert('Erreur : ' + error.message)
     }
     setLoading(false)
   }
 
+  const Toggle = ({ label, field, options }: { label: string, field: keyof typeof form, options: string[] }) => (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{label}</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {options.map(opt => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => setForm({ ...form, [field]: form[field] === opt ? '' : opt })}
+            style={{
+              background: form[field] === opt ? '#e8e4dc' : 'transparent',
+              border: '1px solid',
+              borderColor: form[field] === opt ? '#e8e4dc' : '#2a2a2a',
+              color: form[field] === opt ? '#0a0a0a' : '#555',
+              padding: '7px 14px',
+              fontSize: 10,
+              letterSpacing: '0.12em',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'all 0.15s',
+            }}
+          >{opt}</button>
+        ))}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center gap-4">
-        <Link href="/admin/dashboard" className="text-gray-400 hover:text-gray-600">← Retour</Link>
-        <h1 className="text-lg font-medium text-gray-900">Nouvel article</h1>
+    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+      <header style={{ borderBottom: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: 24 }}>
+        <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#444', textDecoration: 'none' }}>← RETOUR</Link>
+        <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#555' }}>NOUVEAU PRODUIT</span>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Photos */}
-          <div className="card p-6">
-            <h2 className="font-medium text-gray-900 mb-4">Photos</h2>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              {images.map((url, i) => (
-                <div key={i} className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden relative">
-                  <img src={url} alt="" className="object-cover w-full h-full" />
-                  <button
-                    type="button"
-                    onClick={() => setImages(images.filter((_, j) => j !== i))}
-                    className="absolute top-1 right-1 bg-white text-red-500 rounded-full w-6 h-6 text-xs flex items-center justify-center shadow-sm"
-                  >
-                    ✕
-                  </button>
+      <main style={{ maxWidth: 900, margin: '0 auto', padding: '48px 40px' }}>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+            {/* Colonne gauche */}
+            <div>
+              {/* Zone upload */}
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>PHOTOS</div>
+
+                {/* Miniatures */}
+                {images.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
+                    {images.map((url, i) => (
+                      <div key={i} style={{ position: 'relative', aspectRatio: '3/4', background: '#111', overflow: 'hidden' }}>
+                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => setImages(images.filter((_, j) => j !== i))}
+                          style={{
+                            position: 'absolute', top: 6, right: 6,
+                            background: '#0a0a0a', border: 'none', color: '#e8e4dc',
+                            width: 20, height: 20, fontSize: 10, cursor: 'pointer', fontFamily: 'inherit'
+                          }}
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Drop zone */}
+                <div
+                  onDragOver={e => { e.preventDefault(); setDragging(true) }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={handleDrop}
+                  style={{
+                    border: `1px dashed ${dragging ? '#555' : '#222'}`,
+                    padding: '40px 20px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.2s',
+                    position: 'relative',
+                  }}
+                >
+                  <input
+                    type="file" accept="image/*" multiple
+                    onChange={e => e.target.files && uploadFiles(e.target.files)}
+                    style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                  />
+                  <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333' }}>
+                    {uploading ? 'UPLOAD EN COURS...' : 'GLISSER LES PHOTOS ICI — MULTIPLE UPLOAD SUPPORTÉ'}
+                  </div>
                 </div>
-              ))}
-              <label className={`aspect-[3/4] border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 transition-colors ${uploading ? 'opacity-50' : ''}`}>
-                <span className="text-2xl mb-1">+</span>
-                <span className="text-xs text-gray-400">{uploading ? 'Upload...' : 'Ajouter photo'}</span>
-                <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
-              </label>
+              </div>
+
+              {/* Nom */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>NOM DU VÊTEMENT</div>
+                <input
+                  className="input-dark"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="Chemise L bleue Jean Paul Gaultier"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>DESCRIPTION</div>
+                <textarea
+                  className="input-dark"
+                  value={form.description}
+                  onChange={e => setForm({ ...form, description: e.target.value })}
+                  placeholder="Chemise en soie, col ouvert..."
+                  rows={4}
+                  style={{ resize: 'none' }}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Informations */}
-          <div className="card p-6 space-y-4">
-            <h2 className="font-medium text-gray-900">Informations</h2>
-
+            {/* Colonne droite */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'article *</label>
-              <input className="input-field" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Ex: Levi's 501 Indigo" required />
-            </div>
+              <Toggle label="TYPE" field="category" options={CATEGORIES} />
+              <Toggle label="DESIGNER" field="designer" options={DESIGNERS} />
+              <Toggle label="COULEUR" field="color" options={COLORS} />
+              <Toggle label="TAILLE" field="size" options={SIZES} />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea className="input-field h-24 resize-none" value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Décrivez l'article : matière, détails, histoire..." />
-            </div>
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>TARIF LOCATION (€)</div>
+                <input
+                  type="number" min="0" step="5"
+                  className="input-dark"
+                  value={form.price}
+                  onChange={e => setForm({ ...form, price: e.target.value })}
+                  placeholder="150"
+                  style={{ width: 120 }}
+                />
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix (€) *</label>
-                <input type="number" min="0" step="0.5" className="input-field" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="45" required />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
+                <input
+                  type="checkbox" id="available" checked={form.is_available}
+                  onChange={e => setForm({ ...form, is_available: e.target.checked })}
+                  style={{ width: 14, height: 14, accentColor: '#e8e4dc', cursor: 'pointer' }}
+                />
+                <label htmlFor="available" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', cursor: 'pointer' }}>
+                  DISPONIBLE À LA LOCATION
+                </label>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Taille</label>
-                <select className="input-field" value={form.size} onChange={e => setForm({...form, size: e.target.value})}>
-                  {['XS','S','M','L','XL','XXL','36','38','40','42','44','46','Unique'].map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-                <select className="input-field" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
-                  {['tops','jeans','robes','vestes','manteaux','accessoires'].map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Décennie</label>
-                <select className="input-field" value={form.decade} onChange={e => setForm({...form, decade: e.target.value})}>
-                  {['1960','1970','1980','1990','2000','2010'].map(d => <option key={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
-                <select className="input-field" value={form.condition} onChange={e => setForm({...form, condition: e.target.value})}>
-                  {['Excellent','Très bon état','Bon état','Correct'].map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
+              <button
+                type="submit"
+                disabled={loading || uploading}
+                style={{
+                  width: '100%',
+                  background: loading ? 'transparent' : '#e8e4dc',
+                  border: '1px solid',
+                  borderColor: loading ? '#333' : '#e8e4dc',
+                  color: loading ? '#333' : '#0a0a0a',
+                  padding: '14px',
+                  fontSize: 11,
+                  letterSpacing: '0.2em',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {loading ? 'PUBLICATION...' : 'PUBLIER'}
+              </button>
             </div>
-
-            <div className="flex items-center gap-3">
-              <input type="checkbox" id="available" checked={form.is_available} onChange={e => setForm({...form, is_available: e.target.checked})} className="w-4 h-4 accent-brand-500" />
-              <label htmlFor="available" className="text-sm text-gray-700">Article disponible à la vente</label>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Link href="/admin/dashboard" className="btn-secondary flex-1 text-center">Annuler</Link>
-            <button type="submit" disabled={loading || uploading} className="btn-primary flex-1 disabled:opacity-50">
-              {loading ? 'Publication...' : 'Publier l\'article'}
-            </button>
           </div>
         </form>
       </main>

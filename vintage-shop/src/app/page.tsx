@@ -1,115 +1,227 @@
+'use client'
+import { useState, useEffect } from 'react'
 import { supabase, Product } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 
-async function getProducts() {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('is_available', true)
-    .order('created_at', { ascending: false })
-  if (error) return []
-  return data as Product[]
-}
+export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [filtered, setFiltered] = useState<Product[]>([])
+  const [activeFilters, setActiveFilters] = useState<string[]>(['TOUT'])
+  const [loading, setLoading] = useState(true)
 
-export default async function HomePage() {
-  const products = await getProducts()
+  const filterOptions = ['TOUT', 'CHEMISES', 'VESTES', 'ROBES', 'PANTALONS']
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const loadProducts = async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_available', true)
+      .order('created_at', { ascending: false })
+    const list = data || []
+    setProducts(list)
+    setFiltered(list)
+    setLoading(false)
+  }
+
+  const toggleFilter = (f: string) => {
+    if (f === 'TOUT') {
+      setActiveFilters(['TOUT'])
+      setFiltered(products)
+      return
+    }
+    const next = activeFilters.filter(x => x !== 'TOUT').includes(f)
+      ? activeFilters.filter(x => x !== f)
+      : [...activeFilters.filter(x => x !== 'TOUT'), f]
+
+    if (next.length === 0) {
+      setActiveFilters(['TOUT'])
+      setFiltered(products)
+    } else {
+      setActiveFilters(next)
+      setFiltered(products.filter(p =>
+        next.some(f => p.category?.toUpperCase() === f || p.color?.toUpperCase() === f || p.designer?.toUpperCase() === f)
+      ))
+    }
+  }
 
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-medium text-gray-900">
-            Vintage<span className="text-brand-500">Thread</span>
-          </h1>
-          <nav className="flex gap-6 text-sm text-gray-600">
-            <a href="#catalogue" className="hover:text-brand-500 transition-colors">Catalogue</a>
-            <a href="#contact" className="hover:text-brand-500 transition-colors">Contact</a>
-          </nav>
+      <header style={{
+        borderBottom: '1px solid #1a1a1a',
+        padding: '24px 40px',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between'
+      }}>
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 400, letterSpacing: '0.25em', lineHeight: 1 }}>KOSTUM</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.3em', color: '#555', marginTop: 4 }}>ARCHIVES</div>
         </div>
+        <nav style={{ display: 'flex', gap: 40, paddingTop: 4 }}>
+          {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
+            <a key={item} href={`#${item.toLowerCase()}`} style={{
+              fontSize: 11, letterSpacing: '0.2em', color: '#666', textDecoration: 'none',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#e8e4dc')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#666')}
+            >{item}</a>
+          ))}
+        </nav>
       </header>
 
       {/* Hero */}
-      <section className="bg-white py-20 px-4 text-center border-b border-gray-100">
-        <p className="text-sm text-brand-500 font-medium mb-3 tracking-wide uppercase">Mode seconde main</p>
-        <h2 className="text-4xl font-medium text-gray-900 mb-4">
-          Des pièces vintage<br />soigneusement sélectionnées
-        </h2>
-        <p className="text-gray-500 max-w-md mx-auto mb-8">
-          Chaque vêtement est unique. Trouvez votre prochaine pièce de caractère.
+      <section style={{ padding: '60px 40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <h1 style={{ fontStyle: 'italic', fontSize: 64, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1, color: '#e8e4dc' }}>
+          le vestiaire
+        </h1>
+        <p style={{ fontSize: 12, letterSpacing: '0.12em', color: '#555', textAlign: 'right', lineHeight: 2 }}>
+          Location de vêtements<br />pour événements<br />& shootings
         </p>
-        <a href="#catalogue" className="btn-primary inline-block">
-          Voir le catalogue
-        </a>
       </section>
 
-      {/* Catalogue */}
-      <section id="catalogue" className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-medium text-gray-900 mb-8">Catalogue</h2>
+      {/* Filters bar */}
+      <section id="vestiaire" style={{ padding: '0 40px 20px', borderBottom: '1px solid #1a1a1a' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>
+            COLLECTION — {filtered.length} PIÈCES
+          </span>
+          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>FILTRER</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {filterOptions.map(f => (
+            <button
+              key={f}
+              onClick={() => toggleFilter(f)}
+              style={{
+                background: activeFilters.includes(f) ? '#e8e4dc' : 'transparent',
+                border: '1px solid',
+                borderColor: activeFilters.includes(f) ? '#e8e4dc' : '#333',
+                color: activeFilters.includes(f) ? '#0a0a0a' : '#666',
+                padding: '6px 14px',
+                fontSize: 11,
+                letterSpacing: '0.15em',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+              }}
+            >{f}</button>
+          ))}
+        </div>
+      </section>
 
-        {products.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-lg">Aucun article disponible pour le moment.</p>
+      {/* Grid */}
+      <section style={{ padding: '0' }}>
+        {loading ? (
+          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>
+            CHARGEMENT...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>
+            AUCUNE PIÈCE DISPONIBLE
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+          }}>
+            {filtered.map((product, i) => (
+              <ProductCard key={product.id} product={product} index={i} />
             ))}
           </div>
         )}
       </section>
 
-      {/* Contact */}
-      <section id="contact" className="bg-white border-t border-gray-100 py-16 px-4 text-center">
-        <h2 className="text-2xl font-medium text-gray-900 mb-4">Une question ?</h2>
-        <p className="text-gray-500 mb-6">Contactez-nous par Instagram ou email.</p>
-        <a href="mailto:contact@votresite.com" className="btn-primary inline-block">
-          Nous contacter
-        </a>
-      </section>
+      {/* Footer */}
+      <footer style={{ borderTop: '1px solid #1a1a1a', padding: '40px', marginTop: 80 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#333' }}>KOSTUM ARCHIVES</span>
+          <Link href="/admin" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333', textDecoration: 'none' }}>
+            BACK OFFICE
+          </Link>
+        </div>
+      </footer>
     </div>
   )
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, index }: { product: Product; index: number }) {
+  const [hovered, setHovered] = useState(false)
   const firstImage = product.images?.[0]
+  const secondImage = product.images?.[1]
+
+  const borderRight = (index + 1) % 3 !== 0 ? '1px solid #1a1a1a' : 'none'
+  const borderBottom = '1px solid #1a1a1a'
 
   return (
-    <div className="card group cursor-pointer hover:border-brand-500 transition-colors">
-      <div className="aspect-[3/4] bg-gray-100 relative overflow-hidden">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRight,
+        borderBottom,
+        cursor: 'pointer',
+      }}
+    >
+      {/* Image */}
+      <div style={{ position: 'relative', aspectRatio: '3/4', background: '#111', overflow: 'hidden' }}>
         {firstImage ? (
-          <Image
-            src={firstImage}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          <>
+            <Image
+              src={firstImage}
+              alt={product.name}
+              fill
+              style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }}
+            />
+            {secondImage && (
+              <Image
+                src={secondImage}
+                alt={product.name}
+                fill
+                style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }}
+              />
+            )}
+          </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-4xl">
-            👗
-          </div>
-        )}
-        {!product.is_available && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="bg-white text-gray-900 text-xs font-medium px-3 py-1 rounded-full">
-              Vendu
-            </span>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#222', fontSize: 48 }}>
+            —
           </div>
         )}
       </div>
-      <div className="p-3">
-        <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
-        <div className="flex items-center justify-between mt-1">
-          <span className="text-brand-500 font-medium">{product.price}€</span>
-          <span className="text-xs text-gray-400">{product.size} · {product.decade}s</span>
+
+      {/* Info */}
+      <div style={{ padding: '16px 20px 20px' }}>
+        <div style={{ fontSize: 12, letterSpacing: '0.15em', color: '#e8e4dc', marginBottom: 4 }}>
+          {product.name?.toUpperCase()}
         </div>
-        {product.condition && (
-          <span className="inline-block mt-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-            {product.condition}
-          </span>
+        {product.designer && (
+          <div style={{ fontSize: 11, letterSpacing: '0.1em', color: '#555', marginBottom: 12 }}>
+            {product.designer?.toUpperCase()}
+          </div>
         )}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {product.size && (
+            <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>
+              {product.size}
+            </span>
+          )}
+          {product.color && (
+            <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>
+              {product.color?.toUpperCase()}
+            </span>
+          )}
+          {product.category && (
+            <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>
+              {product.category?.toUpperCase()}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

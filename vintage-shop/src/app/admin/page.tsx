@@ -14,11 +14,9 @@ export default function AdminLoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
     if (error) {
-      setError('Email ou mot de passe incorrect.')
+      setError('Identifiants incorrects.')
     } else {
       router.push('/admin/dashboard')
     }
@@ -26,47 +24,55 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl border border-gray-100 p-8 w-full max-w-sm">
-        <h1 className="text-xl font-medium text-gray-900 mb-2">
-          Back office
-        </h1>
-        <p className="text-sm text-gray-500 mb-8">Connexion administrateur</p>
+    <div style={{
+      minHeight: '100vh', background: '#0a0a0a', display: 'flex',
+      alignItems: 'center', justifyContent: 'center'
+    }}>
+      <div style={{ width: 320 }}>
+        <div style={{ marginBottom: 48, textAlign: 'center' }}>
+          <div style={{ fontSize: 18, letterSpacing: '0.3em' }}>KOSTUM</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginTop: 4 }}>BACK OFFICE</div>
+        </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              placeholder="admin@votresite.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="EMAIL"
+            className="input-dark"
+            required
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="MOT DE PASSE"
+            className="input-dark"
+            required
+          />
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#666', textAlign: 'center' }}>{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full disabled:opacity-50"
+            style={{
+              marginTop: 8,
+              background: 'transparent',
+              border: '1px solid #333',
+              color: loading ? '#333' : '#e8e4dc',
+              padding: '12px',
+              fontSize: 11,
+              letterSpacing: '0.2em',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'all 0.2s',
+            }}
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? '...' : 'CONNEXION'}
           </button>
         </form>
       </div>

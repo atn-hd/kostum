@@ -2,16 +2,14 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'VintageThread - Mode Seconde Main',
-  description: 'Découvrez notre sélection de vêtements vintage et seconde main.',
+  title: 'Kostum Archives',
+  description: 'Location de vêtements pour événements & shootings',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className="bg-gray-50 min-h-screen">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }
