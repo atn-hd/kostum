@@ -66,35 +66,54 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: bg }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .grid-products { grid-template-columns: repeat(2, 1fr) !important; }
+          .header-inner { padding: 16px 20px !important; }
+          .nav-links { gap: 12px !important; }
+          .nav-link { font-size: 9px !important; letter-spacing: 0.1em !important; }
+          .logo-text { font-size: 16px !important; }
+          .logo-sub { font-size: 8px !important; }
+          .hero-section { padding: 32px 20px 24px !important; flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
+          .hero-title { font-size: 32px !important; }
+          .hero-sub { text-align: left !important; font-size: 11px !important; }
+          .filters-section { padding: 0 20px 16px !important; }
+          .footer-inner { padding: 24px 20px !important; }
+        }
+      `}</style>
+
       {/* Header */}
-      <header style={{ borderBottom: `1px solid ${border}`, padding: '24px 40px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ fontSize: 22, fontWeight: 400, letterSpacing: '0.25em', lineHeight: 1, color: text }}>KOSTUM</div>
-          <div style={{ fontSize: 10, letterSpacing: '0.3em', color: muted, marginTop: 4 }}>ARCHIVES</div>
+      <header style={{ borderBottom: `1px solid ${border}` }}>
+        <div className="header-inner" style={{ padding: '24px 40px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            <div className="logo-text" style={{ fontSize: 22, fontWeight: 400, letterSpacing: '0.25em', lineHeight: 1, color: text }}>KOSTUM</div>
+            <div className="logo-sub" style={{ fontSize: 10, letterSpacing: '0.3em', color: muted, marginTop: 4 }}>ARCHIVES</div>
+          </div>
+          <nav className="nav-links" style={{ display: 'flex', gap: 40, paddingTop: 4, flexWrap: 'nowrap' }}>
+            {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
+              <a key={item} href={`#${item.toLowerCase()}`}
+                className="nav-link"
+                style={{ fontSize: 11, letterSpacing: '0.2em', color: muted, textDecoration: 'none', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => (e.currentTarget.style.color = text)}
+                onMouseLeave={e => (e.currentTarget.style.color = muted)}
+              >{item}</a>
+            ))}
+          </nav>
         </div>
-        <nav style={{ display: 'flex', gap: 40, paddingTop: 4 }}>
-          {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`}
-              style={{ fontSize: 11, letterSpacing: '0.2em', color: muted, textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = text)}
-              onMouseLeave={e => (e.currentTarget.style.color = muted)}
-            >{item}</a>
-          ))}
-        </nav>
       </header>
 
       {/* Hero */}
-      <section style={{ padding: '60px 40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <h1 style={{ fontStyle: 'italic', fontSize: 64, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1, color: text }}>
+      <section className="hero-section" style={{ padding: '60px 40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <h1 className="hero-title" style={{ fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif', fontSize: 44, fontWeight: 300, letterSpacing: '0.05em', lineHeight: 1, color: text }}>
           le vestiaire
         </h1>
-        <p style={{ fontSize: 12, letterSpacing: '0.12em', color: muted, textAlign: 'right', lineHeight: 2 }}>
-          Location de vêtements<br />pour événements<br />& shootings
+        <p className="hero-sub" style={{ fontSize: 12, letterSpacing: '0.12em', color: muted, textAlign: 'right', lineHeight: 2 }}>
+          Fashion and Costumes<br />collection for rent
         </p>
       </section>
 
       {/* Filters */}
-      <section id="vestiaire" style={{ padding: '0 40px 20px', borderBottom: `1px solid ${border}` }}>
+      <section id="vestiaire" className="filters-section" style={{ padding: '0 40px 20px', borderBottom: `1px solid ${border}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>
             COLLECTION — {filtered.length} PIÈCES
@@ -124,7 +143,7 @@ export default function HomePage() {
         ) : filtered.length === 0 ? (
           <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>AUCUNE PIÈCE DISPONIBLE</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div className="grid-products" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {filtered.map((product, i) => (
               <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} />
             ))}
@@ -133,8 +152,8 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: `1px solid ${border}`, padding: '40px', marginTop: 80 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <footer style={{ borderTop: `1px solid ${border}`, marginTop: 80 }}>
+        <div className="footer-inner" style={{ padding: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#333' }}>KOSTUM ARCHIVES</span>
           <Link href="/admin" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333', textDecoration: 'none' }}>BACK OFFICE</Link>
         </div>
