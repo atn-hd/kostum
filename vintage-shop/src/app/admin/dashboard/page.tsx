@@ -92,7 +92,7 @@ export default function DashboardPage() {
               <div key={product.id} style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '16px 0', borderBottom: '1px solid #1a1a1a' }}>
                 <div style={{ width: 48, height: 64, background: '#111', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                   {product.images?.[0]
-                    ? <Image src={product.images[0]} alt={product.name ?? ''} fill style={{ objectFit: 'cover' }} />
+                    ? <Image src={product.images[0]} alt={product.name ?? ''} fill sizes="48px" style={{ objectFit: 'cover' }} />
                     : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#222', fontSize: 18 }}>—</div>
                   }
                 </div>

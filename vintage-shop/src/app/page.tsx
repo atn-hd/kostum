@@ -136,6 +136,40 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Schema.org ItemList */}
+      {!loading && filtered.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'ItemList',
+              name: 'Catalogue Kostum Archives',
+              description: 'Location de vêtements vintage pour shootings, événements & projets créatifs',
+              numberOfItems: filtered.length,
+              itemListElement: filtered.map((product, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                item: {
+                  '@type': 'Product',
+                  name: product.name,
+                  description: product.description || (product.designer ? `${product.name} par ${product.designer}` : product.name),
+                  ...(product.images?.[0] && { image: product.images[0] }),
+                  ...(product.designer && { brand: { '@type': 'Brand', name: product.designer } }),
+                  ...(product.category && { category: product.category }),
+                  offers: {
+                    '@type': 'Offer',
+                    availability: 'https://schema.org/InStock',
+                    priceCurrency: 'EUR',
+                    seller: { '@type': 'Organization', name: 'Kostum Archives' },
+                  },
+                },
+              })),
+            }),
+          }}
+        />
+      )}
+
       {/* Grid */}
       <section>
         {loading ? (
@@ -181,9 +215,9 @@ function ProductCard({ product, index, bg, text, border }: { product: Product; i
       <div style={{ position: 'relative', aspectRatio: '3/4', background: '#111', overflow: 'hidden' }}>
         {firstImage ? (
           <>
-            <Image src={firstImage} alt={product.name} fill style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }} />
+            <Image src={firstImage} alt={product.name} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }} />
             {secondImage && (
-              <Image src={secondImage} alt={product.name} fill style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }} />
+              <Image src={secondImage} alt={product.name} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }} />
             )}
           </>
         ) : (
