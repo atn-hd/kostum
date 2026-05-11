@@ -215,9 +215,9 @@ function ProductCard({ product, index, bg, text, border }: { product: Product; i
       <div style={{ position: 'relative', aspectRatio: '3/4', background: '#111', overflow: 'hidden' }}>
         {firstImage ? (
           <>
-            <Image src={firstImage} alt={product.name} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }} />
+            <Image src={firstImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }} />
             {secondImage && (
-              <Image src={secondImage} alt={product.name} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }} />
+              <Image src={secondImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }} />
             )}
           </>
         ) : (
