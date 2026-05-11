@@ -8,33 +8,59 @@ import Image from 'next/image'
 export default function DashboardPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    checkAuth()
-    loadProducts()
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/admin')
+        return
+      }
+      setAuthChecked(true)
+      loadProducts()
+    }
+    init()
   }, [])
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) router.push('/admin')
-  }
-
   const loadProducts = async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false })
-    setProducts(data || [])
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (!error) setProducts(data || [])
     setLoading(false)
   }
 
   const toggleAvailability = async (id: string, current: boolean) => {
-    await supabase.from('products').update({ is_available: !current }).eq('id', id)
+    const { error } = await supabase
+      .from('products')
+      .update({ is_available: !current })
+      .eq('id', id)
+    if (error) {
+      alert('Impossible de modifier la disponibilité. Réessayez.')
+      return
+    }
     loadProducts()
   }
 
   const deleteProduct = async (id: string) => {
     if (!confirm('Supprimer cette pièce ?')) return
-    await supabase.from('products').delete().eq('id', id)
+    const { error } = await supabase.from('products').delete().eq('id', id)
+    if (error) {
+      alert('Impossible de supprimer cette pièce. Réessayez.')
+      return
+    }
     loadProducts()
+  }
+
+  if (!authChecked) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#333' }}>...</span>
+      </div>
+    )
   }
 
   return (
@@ -66,14 +92,17 @@ export default function DashboardPage() {
               <div key={product.id} style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '16px 0', borderBottom: '1px solid #1a1a1a' }}>
                 <div style={{ width: 48, height: 64, background: '#111', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                   {product.images?.[0]
-                    ? <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover' }} />
+                    ? <Image src={product.images[0]} alt={product.name ?? ''} fill style={{ objectFit: 'cover' }} />
                     : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#222', fontSize: 18 }}>—</div>
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, letterSpacing: '0.15em', color: '#e8e4dc' }}>{product.name?.toUpperCase()}</div>
                   <div style={{ fontSize: 10, letterSpacing: '0.1em', color: '#444', marginTop: 4 }}>
-                    {[product.designer, product.size, product.color, product.category].filter(Boolean).map(v => v?.toUpperCase()).join(' · ')}
+                    {[product.designer, product.size, product.color, product.category]
+                      .filter((v): v is string => Boolean(v))
+                      .map(v => v.toUpperCase())
+                      .join(' · ')}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexShrink: 0 }}>

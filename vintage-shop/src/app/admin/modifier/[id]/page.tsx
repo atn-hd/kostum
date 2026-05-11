@@ -17,6 +17,8 @@ export default function ModifierPage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [uploadError, setUploadError] = useState('')
+  const [notFound, setNotFound] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
   const [form, setForm] = useState({
@@ -26,38 +28,56 @@ export default function ModifierPage() {
   })
 
   useEffect(() => {
-    loadProduct()
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/admin')
+        return
+      }
+      loadProduct()
+    }
+    init()
   }, [id])
 
   const loadProduct = async () => {
-    const { data } = await supabase.from('products').select('*').eq('id', id).single()
-    if (data) {
-      setForm({
-        name: data.name || '',
-        description: data.description || '',
-        price: data.price?.toString() || '',
-        category: data.category || '',
-        designer: data.designer || '',
-        size: data.size || '',
-        color: data.color || '',
-        is_available: data.is_available ?? true,
-      })
-      setImages(data.images || [])
+    const { data, error } = await supabase.from('products').select('*').eq('id', id).single()
+    if (error || !data) {
+      setNotFound(true)
+      setFetching(false)
+      return
     }
+    setForm({
+      name: data.name || '',
+      description: data.description || '',
+      price: data.price?.toString() || '',
+      category: data.category || '',
+      designer: data.designer || '',
+      size: data.size || '',
+      color: data.color || '',
+      is_available: data.is_available ?? true,
+    })
+    setImages(data.images || [])
     setFetching(false)
   }
 
   const uploadFiles = async (files: FileList | File[]) => {
     setUploading(true)
+    setUploadError('')
     const urls: string[] = []
+    let failed = 0
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('products').upload(fileName, file)
-      if (!error) {
+      if (error) {
+        failed++
+      } else {
         const { data } = supabase.storage.from('products').getPublicUrl(fileName)
         urls.push(data.publicUrl)
       }
+    }
+    if (failed > 0) {
+      setUploadError(`${failed} image(s) n'ont pas pu être uploadées. Vérifiez le format (JPG, PNG, WEBP) et réessayez.`)
     }
     setImages(prev => [...prev, ...urls])
     setUploading(false)
@@ -81,7 +101,7 @@ export default function ModifierPage() {
     if (!error) {
       router.push('/admin/dashboard')
     } else {
-      alert('Erreur : ' + error.message)
+      alert('Une erreur est survenue lors de la sauvegarde. Réessayez.')
     }
     setLoading(false)
   }
@@ -119,6 +139,13 @@ export default function ModifierPage() {
     </div>
   )
 
+  if (notFound) return (
+    <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+      <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>PIÈCE INTROUVABLE</span>
+      <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', textDecoration: 'none' }}>← RETOUR AU DASHBOARD</Link>
+    </div>
+  )
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <header style={{ borderBottom: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -129,7 +156,6 @@ export default function ModifierPage() {
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '48px 40px' }}>
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
-            {/* Colonne gauche */}
             <div>
               <div style={{ marginBottom: 32 }}>
                 <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>PHOTOS</div>
@@ -158,6 +184,9 @@ export default function ModifierPage() {
                     {uploading ? 'UPLOAD EN COURS...' : 'GLISSER LES PHOTOS ICI — MULTIPLE UPLOAD SUPPORTÉ'}
                   </div>
                 </div>
+                {uploadError && (
+                  <div style={{ marginTop: 8, fontSize: 10, letterSpacing: '0.1em', color: '#cc4444' }}>{uploadError}</div>
+                )}
               </div>
 
               <div style={{ marginBottom: 20 }}>
@@ -171,7 +200,6 @@ export default function ModifierPage() {
               </div>
             </div>
 
-            {/* Colonne droite */}
             <div>
               <Toggle label="TYPE" field="category" options={CATEGORIES} />
               <Toggle label="DESIGNER" field="designer" options={DESIGNERS} />

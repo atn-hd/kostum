@@ -14,16 +14,19 @@ export default function ParametresPage() {
   const [newCategory, setNewCategory] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
-    checkAuth()
-    loadData()
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/admin')
+        return
+      }
+      loadData()
+    }
+    init()
   }, [])
-
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) router.push('/admin')
-  }
 
   const loadData = async () => {
     const [settingsRes, designersRes, categoriesRes] = await Promise.all([
@@ -43,13 +46,19 @@ export default function ParametresPage() {
 
   const saveColors = async () => {
     setSaving(true)
-    await Promise.all([
+    setSaveError('')
+    const results = await Promise.all([
       supabase.from('settings').upsert({ key: 'bg_color', value: bgColor }),
       supabase.from('settings').upsert({ key: 'text_color', value: textColor }),
     ])
+    const hasError = results.some(r => r.error)
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    if (hasError) {
+      setSaveError('Erreur lors de la sauvegarde. Réessayez.')
+    } else {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    }
   }
 
   const addDesigner = async () => {
@@ -59,13 +68,19 @@ export default function ParametresPage() {
     if (!error) {
       setDesigners(prev => [...prev, name].sort())
       setNewDesigner('')
+    } else {
+      alert('Impossible d\'ajouter ce créateur. Il existe peut-être déjà.')
     }
   }
 
   const removeDesigner = async (name: string) => {
     if (!confirm(`Supprimer "${name}" ?`)) return
-    await supabase.from('designers').delete().eq('name', name)
-    setDesigners(prev => prev.filter(d => d !== name))
+    const { error } = await supabase.from('designers').delete().eq('name', name)
+    if (!error) {
+      setDesigners(prev => prev.filter(d => d !== name))
+    } else {
+      alert('Impossible de supprimer ce créateur.')
+    }
   }
 
   const addCategory = async () => {
@@ -75,13 +90,19 @@ export default function ParametresPage() {
     if (!error) {
       setCategories(prev => [...prev, name].sort())
       setNewCategory('')
+    } else {
+      alert('Impossible d\'ajouter cette catégorie. Elle existe peut-être déjà.')
     }
   }
 
   const removeCategory = async (name: string) => {
     if (!confirm(`Supprimer "${name}" ?`)) return
-    await supabase.from('categories').delete().eq('name', name)
-    setCategories(prev => prev.filter(c => c !== name))
+    const { error } = await supabase.from('categories').delete().eq('name', name)
+    if (!error) {
+      setCategories(prev => prev.filter(c => c !== name))
+    } else {
+      alert('Impossible de supprimer cette catégorie.')
+    }
   }
 
   const label = (txt: string) => (
@@ -99,7 +120,6 @@ export default function ParametresPage() {
 
       <main style={{ maxWidth: 800, margin: '0 auto', padding: '48px 40px', display: 'flex', flexDirection: 'column', gap: 48 }}>
 
-        {/* Couleurs */}
         <section>
           <div style={{ fontSize: 12, letterSpacing: '0.3em', color: '#e8e4dc', marginBottom: 24, paddingBottom: 12, borderBottom: '1px solid #1a1a1a' }}>
             COULEURS DU SITE
@@ -147,12 +167,14 @@ export default function ParametresPage() {
             </div>
           </div>
 
-          {/* Aperçu */}
           <div style={{ background: bgColor, border: '1px solid #2a2a2a', padding: '20px 24px', marginBottom: 20, borderRadius: 2 }}>
             <div style={{ color: textColor, fontSize: 18, letterSpacing: '0.25em', marginBottom: 6 }}>KOSTUM</div>
             <div style={{ color: textColor, fontSize: 11, letterSpacing: '0.15em', opacity: 0.5 }}>ARCHIVES — APERÇU</div>
           </div>
 
+          {saveError && (
+            <div style={{ marginBottom: 12, fontSize: 10, letterSpacing: '0.1em', color: '#cc4444' }}>{saveError}</div>
+          )}
           <button
             onClick={saveColors}
             disabled={saving}
@@ -162,7 +184,6 @@ export default function ParametresPage() {
           </button>
         </section>
 
-        {/* Designers */}
         <section>
           <div style={{ fontSize: 12, letterSpacing: '0.3em', color: '#e8e4dc', marginBottom: 24, paddingBottom: 12, borderBottom: '1px solid #1a1a1a' }}>
             CRÉATEURS & MARQUES
@@ -199,7 +220,6 @@ export default function ParametresPage() {
           </div>
         </section>
 
-        {/* Catégories */}
         <section>
           <div style={{ fontSize: 12, letterSpacing: '0.3em', color: '#e8e4dc', marginBottom: 24, paddingBottom: 12, borderBottom: '1px solid #1a1a1a' }}>
             CATÉGORIES

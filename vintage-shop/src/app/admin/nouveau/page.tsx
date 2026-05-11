@@ -11,6 +11,7 @@ export default function NouvelArticlePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
   const [designers, setDesigners] = useState<string[]>([])
@@ -22,7 +23,15 @@ export default function NouvelArticlePage() {
   })
 
   useEffect(() => {
-    loadOptions()
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/admin')
+        return
+      }
+      loadOptions()
+    }
+    init()
   }, [])
 
   const loadOptions = async () => {
@@ -36,15 +45,22 @@ export default function NouvelArticlePage() {
 
   const uploadFiles = async (files: FileList | File[]) => {
     setUploading(true)
+    setUploadError('')
     const urls: string[] = []
+    let failed = 0
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('products').upload(fileName, file)
-      if (!error) {
+      if (error) {
+        failed++
+      } else {
         const { data } = supabase.storage.from('products').getPublicUrl(fileName)
         urls.push(data.publicUrl)
       }
+    }
+    if (failed > 0) {
+      setUploadError(`${failed} image(s) n'ont pas pu être uploadées. Vérifiez le format (JPG, PNG, WEBP) et réessayez.`)
     }
     setImages(prev => [...prev, ...urls])
     setUploading(false)
@@ -68,7 +84,7 @@ export default function NouvelArticlePage() {
     if (!error) {
       router.push('/admin/dashboard')
     } else {
-      alert('Erreur : ' + error.message)
+      alert('Une erreur est survenue lors de la publication. Réessayez.')
     }
     setLoading(false)
   }
@@ -114,6 +130,9 @@ export default function NouvelArticlePage() {
                   <input type="file" accept="image/*" multiple onChange={e => e.target.files && uploadFiles(e.target.files)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
                   <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333' }}>{uploading ? 'UPLOAD EN COURS...' : 'GLISSER LES PHOTOS ICI'}</div>
                 </div>
+                {uploadError && (
+                  <div style={{ marginTop: 8, fontSize: 10, letterSpacing: '0.1em', color: '#cc4444' }}>{uploadError}</div>
+                )}
               </div>
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>NOM DU VÊTEMENT</div>
