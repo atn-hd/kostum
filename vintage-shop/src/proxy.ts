@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -23,24 +23,16 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // getUser() valide le token côté serveur (plus sûr que getSession)
   const { data: { user } } = await supabase.auth.getUser()
-
   const pathname = request.nextUrl.pathname
-  const isProtectedRoute = pathname.startsWith('/admin/') || pathname === '/admin/dashboard'
-  const isLoginPage = pathname === '/admin'
 
-  if (isProtectedRoute && !user) {
+  if (pathname.startsWith('/admin/') && !user) {
     return NextResponse.redirect(new URL('/admin', request.url))
-  }
-
-  if (isLoginPage && user) {
-    return NextResponse.redirect(new URL('/admin/dashboard', request.url))
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*'],
+  matcher: ['/admin/:path*'],
 }
