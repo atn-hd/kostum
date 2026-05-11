@@ -12,10 +12,9 @@ export default function HomePage() {
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [colors, setColors] = useState({ bg: '#0a0a0a', text: '#e8e4dc' })
+  const [gridKey, setGridKey] = useState(0)
 
-  useEffect(() => {
-    loadAll()
-  }, [])
+  useEffect(() => { loadAll() }, [])
 
   const loadAll = async () => {
     const [productsRes, categoriesRes, settingsRes] = await Promise.all([
@@ -23,23 +22,20 @@ export default function HomePage() {
       supabase.from('categories').select('name').order('name'),
       supabase.from('settings').select('*'),
     ])
-
     const list = productsRes.data || []
     setProducts(list)
     setFiltered(list)
-
     if (categoriesRes.data) setCategories(categoriesRes.data.map(c => c.name))
-
     if (settingsRes.data) {
       const bg = settingsRes.data.find(s => s.key === 'bg_color')
       const text = settingsRes.data.find(s => s.key === 'text_color')
       setColors({ bg: bg?.value || '#0a0a0a', text: text?.value || '#e8e4dc' })
     }
-
     setLoading(false)
   }
 
   const toggleFilter = (f: string, allProducts: Product[] = products) => {
+    setGridKey(k => k + 1)
     if (f === 'TOUT') {
       setActiveFilters(['TOUT'])
       setFiltered(allProducts)
@@ -47,7 +43,6 @@ export default function HomePage() {
     }
     const current = activeFilters.filter(x => x !== 'TOUT')
     const next = current.includes(f) ? current.filter(x => x !== f) : [...current, f]
-
     if (next.length === 0) {
       setActiveFilters(['TOUT'])
       setFiltered(allProducts)
@@ -61,41 +56,67 @@ export default function HomePage() {
 
   const bg = colors.bg
   const text = colors.text
-  const muted = '#666'
+  const muted = '#555'
   const border = '#1a1a1a'
 
   return (
-    <div style={{ minHeight: '100vh', background: bg }}>
+    <div style={{ minHeight: '100vh', background: bg, color: text, fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
       <style>{`
         @media (max-width: 768px) {
           .grid-products { grid-template-columns: repeat(2, 1fr) !important; }
           .header-inner { padding: 16px 20px !important; }
-          .nav-links { gap: 12px !important; }
+          .nav-links { gap: 16px !important; }
           .nav-link { font-size: 9px !important; letter-spacing: 0.1em !important; }
           .logo-text { font-size: 16px !important; }
           .logo-sub { font-size: 8px !important; }
-          .hero-section { padding: 32px 20px 24px !important; flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
-          .hero-title { font-size: 32px !important; }
+          .hero-section { padding: 40px 20px 28px !important; flex-direction: column !important; gap: 16px !important; align-items: flex-start !important; }
+          .hero-title { font-size: 36px !important; }
           .hero-sub { text-align: left !important; font-size: 11px !important; }
-          .filters-section { padding: 0 20px 16px !important; }
+          .filters-section { padding: 0 20px 20px !important; }
           .footer-inner { padding: 24px 20px !important; }
+          .section-inner { padding: 60px 20px !important; }
+          .section-two-col { flex-direction: column !important; gap: 40px !important; }
         }
+        @keyframes gridFadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes filterPop {
+          0%   { transform: scale(0.94); }
+          55%  { transform: scale(1.04); }
+          100% { transform: scale(1); }
+        }
+        .grid-animate { animation: gridFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
+        .filter-btn {
+          transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.15s ease;
+          will-change: transform;
+        }
+        .filter-btn:hover { transform: translateY(-1px); }
+        .filter-btn:active { transform: scale(0.96) !important; }
+        .filter-btn.is-active { animation: filterPop 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .cta-link {
+          display: inline-block;
+          transition: background 0.22s ease, color 0.22s ease;
+        }
+        .cta-link:hover { background: var(--text) !important; color: var(--bg) !important; }
+        .nav-link { transition: color 0.2s ease; }
+        .product-card { transition: background 0.2s ease; }
       `}</style>
 
       {/* Header */}
-      <header style={{ borderBottom: `1px solid ${border}` }}>
-        <div className="header-inner" style={{ padding: '24px 40px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <header style={{ borderBottom: `1px solid ${border}`, position: 'sticky', top: 0, zIndex: 10, background: bg }}>
+        <div className="header-inner" style={{ padding: '22px 40px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <div className="logo-text" style={{ fontSize: 22, fontWeight: 400, letterSpacing: '0.25em', lineHeight: 1, color: text }}>KOSTUM</div>
-            <div className="logo-sub" style={{ fontSize: 10, letterSpacing: '0.3em', color: muted, marginTop: 4 }}>ARCHIVES</div>
+            <div className="logo-text" style={{ fontSize: 20, fontWeight: 500, letterSpacing: '0.28em', lineHeight: 1, color: text }}>KOSTUM</div>
+            <div className="logo-sub" style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginTop: 5 }}>ARCHIVES</div>
           </div>
-          <nav className="nav-links" style={{ display: 'flex', gap: 40, paddingTop: 4, flexWrap: 'nowrap' }}>
+          <nav className="nav-links" style={{ display: 'flex', gap: 40, paddingTop: 2, flexWrap: 'nowrap' }}>
             {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
               <a key={item} href={`#${item.toLowerCase()}`}
                 className="nav-link"
-                style={{ fontSize: 11, letterSpacing: '0.2em', color: muted, textDecoration: 'none', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => (e.currentTarget.style.color = text)}
-                onMouseLeave={e => (e.currentTarget.style.color = muted)}
+                style={{ fontSize: 10, letterSpacing: '0.22em', color: '#444', textDecoration: 'none', whiteSpace: 'nowrap', paddingBottom: 2, borderBottom: '1px solid transparent' }}
+                onMouseEnter={e => { e.currentTarget.style.color = text; e.currentTarget.style.borderBottomColor = text }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#444'; e.currentTarget.style.borderBottomColor = 'transparent' }}
               >{item}</a>
             ))}
           </nav>
@@ -103,136 +124,255 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <section className="hero-section" style={{ padding: '60px 40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <h1 className="hero-title" style={{ fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif', fontSize: 44, fontWeight: 300, letterSpacing: '0.05em', lineHeight: 1, color: text }}>
-          LE VESTIAIRE
-        </h1>
-        <p className="hero-sub" style={{ fontSize: 12, letterSpacing: '0.12em', color: muted, textAlign: 'right', lineHeight: 2 }}>
-          Fashion and Costumes<br />collection for rent
+      <section className="hero-section" style={{ padding: '64px 40px 44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `1px solid ${border}` }}>
+        <div>
+          <p style={{ fontSize: 10, letterSpacing: '0.3em', color: '#444', marginBottom: 20 }}>PARIS — VESTIAIRE VINTAGE</p>
+          <h1 className="hero-title" style={{ fontSize: 52, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>
+            LE VESTIAIRE
+          </h1>
+        </div>
+        <p className="hero-sub" style={{ fontSize: 11, letterSpacing: '0.14em', color: muted, textAlign: 'right', lineHeight: 2.2 }}>
+          Fashion & Costumes<br />collection for rent
         </p>
       </section>
 
       {/* Filters */}
-      <section id="vestiaire" className="filters-section" style={{ padding: '0 40px 20px', borderBottom: `1px solid ${border}` }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>
-            COLLECTION — {filtered.length} PIÈCES
+      <section id="vestiaire" className="filters-section" style={{ padding: '20px 40px 20px', borderBottom: `1px solid ${border}` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444' }}>
+            COLLECTION&ensp;—&ensp;
+            <span style={{ color: activeFilters[0] === 'TOUT' ? '#444' : text, transition: 'color 0.2s' }}>
+              {filtered.length} PIÈCE{filtered.length !== 1 ? 'S' : ''}
+            </span>
           </span>
-          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>FILTRER</span>
+          <span style={{ fontSize: 10, letterSpacing: '0.25em', color: '#333' }}>FILTRER PAR CATÉGORIE</span>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {['TOUT', ...categories].map(f => (
-            <button key={f} onClick={() => toggleFilter(f)}
-              style={{
-                background: activeFilters.includes(f) ? text : 'transparent',
-                border: '1px solid',
-                borderColor: activeFilters.includes(f) ? text : '#333',
-                color: activeFilters.includes(f) ? bg : muted,
-                padding: '6px 14px', fontSize: 11, letterSpacing: '0.15em',
-                cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit',
-              }}
-            >{f}</button>
-          ))}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {['TOUT', ...categories].map(f => {
+            const active = activeFilters.includes(f)
+            return (
+              <button key={f} onClick={() => toggleFilter(f)}
+                className={`filter-btn${active ? ' is-active' : ''}`}
+                style={{
+                  background: active ? text : 'transparent',
+                  border: '1px solid',
+                  borderColor: active ? text : '#2a2a2a',
+                  color: active ? bg : '#555',
+                  padding: '5px 14px', fontSize: 10, letterSpacing: '0.18em',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >{f}</button>
+            )
+          })}
         </div>
       </section>
 
-      {/* Schema.org ItemList */}
+      {/* Schema.org */}
       {!loading && filtered.length > 0 && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'ItemList',
-              name: 'Catalogue Kostum Archives',
-              description: 'Location de vêtements vintage pour shootings, événements & projets créatifs',
-              numberOfItems: filtered.length,
-              itemListElement: filtered.map((product, index) => ({
-                '@type': 'ListItem',
-                position: index + 1,
-                item: {
-                  '@type': 'Product',
-                  name: product.name,
-                  description: product.description || (product.designer ? `${product.name} par ${product.designer}` : product.name),
-                  ...(product.images?.[0] && { image: product.images[0] }),
-                  ...(product.designer && { brand: { '@type': 'Brand', name: product.designer } }),
-                  ...(product.category && { category: product.category }),
-                  offers: {
-                    '@type': 'Offer',
-                    availability: 'https://schema.org/InStock',
-                    priceCurrency: 'EUR',
-                    seller: { '@type': 'Organization', name: 'Kostum Archives' },
-                  },
-                },
-              })),
-            }),
-          }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'ItemList',
+          name: 'Catalogue Kostum Archives',
+          description: 'Location de vêtements vintage pour shootings, événements & projets créatifs',
+          numberOfItems: filtered.length,
+          itemListElement: filtered.map((product, index) => ({
+            '@type': 'ListItem', position: index + 1,
+            item: {
+              '@type': 'Product', name: product.name,
+              description: product.description || (product.designer ? `${product.name} par ${product.designer}` : product.name),
+              ...(product.images?.[0] && { image: product.images[0] }),
+              ...(product.designer && { brand: { '@type': 'Brand', name: product.designer } }),
+              ...(product.category && { category: product.category }),
+              offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', priceCurrency: 'EUR', seller: { '@type': 'Organization', name: 'Kostum Archives' } },
+            },
+          })),
+        })}} />
       )}
 
       {/* Grid */}
-      <section>
+      <section style={{ minHeight: 320 }}>
         {loading ? (
-          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>CHARGEMENT...</div>
+          <div style={{ padding: '100px 40px', color: '#2a2a2a', letterSpacing: '0.25em', fontSize: 10 }}>CHARGEMENT...</div>
+        ) : products.length === 0 ? (
+          /* État vide — catalogue vide */
+          <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>VESTIAIRE</div>
+            <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>Le vestiaire se prépare</h2>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44, maxWidth: 360 }}>
+              Aucune pièce disponible pour le moment.<br />Revenez bientôt ou écrivez-nous pour une demande spécifique.
+            </p>
+            <a href="#book" className="cta-link"
+              style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
+            >FAIRE UNE DEMANDE</a>
+          </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: '80px 40px', color: '#333', letterSpacing: '0.2em', fontSize: 11 }}>AUCUNE PIÈCE DISPONIBLE</div>
+          /* État vide — aucun résultat pour ce filtre */
+          <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>VESTIAIRE</div>
+            <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>Aucune pièce trouvée</h2>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>
+              Aucun article ne correspond à ce filtre.
+            </p>
+            <button onClick={() => toggleFilter('TOUT')} className="cta-link"
+              style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, background: 'transparent', padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties}
+            >VOIR TOUT LE VESTIAIRE</button>
+          </div>
         ) : (
-          <div className="grid-products" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div key={gridKey} className="grid-products grid-animate" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {filtered.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} />
+              <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} muted={muted} />
             ))}
           </div>
         )}
       </section>
 
+      {/* BOOK */}
+      <section id="book" style={{ borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
+        <div className="section-inner" style={{ padding: '80px 40px' }}>
+          <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
+            <div style={{ flex: 1, maxWidth: 480 }}>
+              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>BOOK</p>
+              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>
+                Réserver une pièce
+              </h2>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>
+                Pour toute demande de réservation, de disponibilité ou de tarification, contactez-nous directement par email en précisant la pièce souhaitée, les dates et l'usage prévu.
+              </p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>
+                Nous répondons sous 24h.
+              </p>
+              <a href="mailto:contact@kostum-archives.com" className="cta-link"
+                style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
+              >NOUS ÉCRIRE</a>
+            </div>
+            <div style={{ flex: 1, maxWidth: 320, paddingTop: 4 }}>
+              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>USAGE</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Shootings photo & film<br />Événements & galas<br />Projets artistiques<br />Tournages & productions</div>
+              </div>
+              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24 }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>DÉLAI</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Réservation à partir de 48h<br />avant la date souhaitée</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" style={{ borderBottom: `1px solid ${border}` }}>
+        <div className="section-inner" style={{ padding: '80px 40px' }}>
+          <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
+            <div style={{ flex: 1, maxWidth: 480 }}>
+              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>ABOUT</p>
+              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>
+                Kostum Archives
+              </h2>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>
+                Kostum Archives est un vestiaire vintage parisien dédié à la location de vêtements pour les professionnels du cinéma, de la photographie et de l'événementiel.
+              </p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2 }}>
+                Chaque pièce est sélectionnée pour son histoire, sa matière et son caractère singulier. Un catalogue vivant, en perpétuelle évolution, au service de projets qui demandent l'essentiel.
+              </p>
+            </div>
+            <div style={{ flex: 1, maxWidth: 320, paddingTop: 4 }}>
+              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>LOCALISATION</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Paris, France<br />Sur rendez-vous uniquement</div>
+              </div>
+              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>CATALOGUE</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Vêtements de créateurs<br />Pièces vintage & archive<br />Accessoires & costumes</div>
+              </div>
+              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24 }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>CONTACT</div>
+                <a href="mailto:contact@kostum-archives.com"
+                  style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2, textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = text)}
+                  onMouseLeave={e => (e.currentTarget.style.color = muted)}
+                >contact@kostum-archives.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CGU */}
+      <section id="cgu" style={{ borderBottom: `1px solid ${border}` }}>
+        <div className="section-inner" style={{ padding: '80px 40px' }}>
+          <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>CGU</p>
+          <h2 style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 40, lineHeight: 1.2 }}>
+            Conditions Générales d'Utilisation
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px 80px', maxWidth: 960 }}>
+            {[
+              { titre: 'Location', texte: "Les pièces sont louées pour une durée définie, convenue à l'avance. Toute prolongation doit être demandée et validée avant l'échéance." },
+              { titre: 'Dépôt de garantie', texte: "Un dépôt de garantie est demandé à la remise de chaque pièce. Il est restitué intégralement à son retour en bon état." },
+              { titre: 'Responsabilité', texte: "Le locataire est responsable de toute dégradation survenant pendant la période de location. Les frais de réparation ou de remplacement sont à sa charge." },
+              { titre: 'Annulation', texte: "Toute annulation doit être notifiée au moins 48h avant la date prévue. Passé ce délai, le dépôt de garantie pourra être retenu." },
+            ].map(({ titre, texte }) => (
+              <div key={titre} style={{ borderTop: `1px solid ${border}`, paddingTop: 20 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.2em', color: text, marginBottom: 12 }}>{titre.toUpperCase()}</div>
+                <p style={{ fontSize: 11, letterSpacing: '0.06em', color: muted, lineHeight: 2 }}>{texte}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer style={{ borderTop: `1px solid ${border}`, marginTop: 80 }}>
-        <div className="footer-inner" style={{ padding: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#333' }}>KOSTUM ARCHIVES</span>
-          <Link href="/admin" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333', textDecoration: 'none' }}>BACK OFFICE</Link>
+      <footer>
+        <div className="footer-inner" style={{ padding: '32px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.28em', color: '#2a2a2a' }}>KOSTUM ARCHIVES — PARIS</span>
+          <Link href="/admin" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#2a2a2a', textDecoration: 'none', transition: 'color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#555')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#2a2a2a')}
+          >BACK OFFICE</Link>
         </div>
       </footer>
     </div>
   )
 }
 
-function ProductCard({ product, index, bg, text, border }: { product: Product; index: number; bg: string; text: string; border: string }) {
+function ProductCard({ product, index, bg, text, border, muted }: { product: Product; index: number; bg: string; text: string; border: string; muted: string }) {
   const [hovered, setHovered] = useState(false)
   const firstImage = product.images?.[0]
   const secondImage = product.images?.[1]
 
   return (
     <div
+      className="product-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         borderRight: (index + 1) % 3 !== 0 ? `1px solid ${border}` : 'none',
         borderBottom: `1px solid ${border}`,
         cursor: 'pointer',
-        background: bg,
+        background: hovered ? '#0f0f0f' : bg,
       }}
     >
-      <div style={{ position: 'relative', aspectRatio: '3/4', background: '#111', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', aspectRatio: '3/4', background: '#0d0d0d', overflow: 'hidden' }}>
         {firstImage ? (
           <>
-            <Image src={firstImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered && secondImage ? 0 : 1 }} />
+            <Image src={firstImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
+              style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
             {secondImage && (
-              <Image src={secondImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.4s', opacity: hovered ? 1 : 0 }} />
+              <Image src={secondImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
+                style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
             )}
           </>
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#222', fontSize: 48 }}>—</div>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e1e1e', fontSize: 40, letterSpacing: '0.2em' }}>—</div>
         )}
       </div>
-      <div style={{ padding: '16px 20px 20px' }}>
-        <div style={{ fontSize: 12, letterSpacing: '0.15em', color: text, marginBottom: 4 }}>{product.name?.toUpperCase()}</div>
+      <div style={{ padding: '18px 20px 22px' }}>
+        <div style={{ fontSize: 11, letterSpacing: '0.18em', color: text, marginBottom: 6, fontWeight: 400 }}>{product.name?.toUpperCase()}</div>
         {product.designer && (
-          <div style={{ fontSize: 11, letterSpacing: '0.1em', color: '#555', marginBottom: 12 }}>{product.designer?.toUpperCase()}</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.12em', color: '#444', marginBottom: 14 }}>{product.designer?.toUpperCase()}</div>
         )}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {product.size && <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>{product.size}</span>}
-          {product.color && <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>{product.color?.toUpperCase()}</span>}
-          {product.category && <span style={{ fontSize: 10, letterSpacing: '0.15em', border: '1px solid #222', padding: '3px 8px', color: '#555' }}>{product.category?.toUpperCase()}</span>}
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+          {product.size && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.size}</span>}
+          {product.color && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.color?.toUpperCase()}</span>}
+          {product.category && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.category?.toUpperCase()}</span>}
         </div>
       </div>
     </div>
