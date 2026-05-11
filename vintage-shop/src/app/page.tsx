@@ -127,8 +127,8 @@ export default function HomePage() {
       <section className="hero-section" style={{ padding: '64px 40px 44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `1px solid ${border}` }}>
         <div>
           <p style={{ fontSize: 10, letterSpacing: '0.3em', color: '#444', marginBottom: 20 }}>PARIS — VESTIAIRE VINTAGE</p>
-          <h1 className="hero-title" style={{ fontSize: 52, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>
-            LE VESTIAIRE
+          <h1 className="hero-title" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>
+            VESTIAIRE
           </h1>
         </div>
         <p className="hero-sub" style={{ fontSize: 11, letterSpacing: '0.14em', color: muted, textAlign: 'right', lineHeight: 2.2 }}>
@@ -347,7 +347,7 @@ function ProductCard({ product, index, bg, text, border, muted }: { product: Pro
         borderRight: (index + 1) % 3 !== 0 ? `1px solid ${border}` : 'none',
         borderBottom: `1px solid ${border}`,
         cursor: 'pointer',
-        background: hovered ? '#0f0f0f' : bg,
+        background: bg,
       }}
     >
       <div style={{ position: 'relative', aspectRatio: '3/4', background: '#0d0d0d', overflow: 'hidden' }}>
