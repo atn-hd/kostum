@@ -128,14 +128,12 @@ export default function ProductPage() {
             onMouseLeave={() => setZoomed(false)}
           >
             {mainImage ? (
-              <Image
+              <img
                 src={mainImage}
                 alt={product.name ?? ''}
-                fill
-                sizes="100vw"
-                priority
-                quality={100}
                 style={{
+                  width: '100%',
+                  height: '100%',
                   objectFit: 'contain',
                   transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                   transform: zoomed ? 'scale(2.5)' : 'scale(1)',
