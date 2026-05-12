@@ -145,7 +145,7 @@ export default function HomePage() {
         .cta-link:hover { background: var(--text) !important; color: var(--bg) !important; }
         .nav-link { transition: color 0.2s ease; }
         .grid-products { border-top: 1px solid #1a1a1a; border-left: 1px solid #1a1a1a; }
-        .product-card { border-right: 1px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; transition: background 0.2s ease; }
+        .product-card { border-right: 1px solid #1a1a1a !important; border-bottom: 1px solid #1a1a1a !important; transition: background 0.2s ease; }
         .filter-dropdown { animation: dropdownIn 0.18s ease both; }
         .dim-check:hover { background: #dddbdb !important; }
         .lang-btn { transition: color 0.15s ease; }
