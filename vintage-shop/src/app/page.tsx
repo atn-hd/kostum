@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase, Product } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useLang } from '@/lib/useLang'
+import { translations } from '@/lib/i18n'
 
 type ActiveDims = { types: boolean, designers: boolean, colors: boolean, sizes: boolean }
 type ActiveFilters = { types: string[], designers: string[], colors: string[], sizes: string[] }
@@ -17,6 +19,8 @@ export default function HomePage() {
   const [activeDims, setActiveDims] = useState<ActiveDims>({ types: true, designers: false, colors: false, sizes: false })
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({ types: [], designers: [], colors: [], sizes: [] })
   const filterRef = useRef<HTMLDivElement>(null)
+  const [lang, toggleLang] = useLang()
+  const t = translations[lang]
 
   useEffect(() => { loadAll() }, [])
 
@@ -91,10 +95,17 @@ export default function HomePage() {
   const border = '#1a1a1a'
 
   const dimOptions: { key: keyof ActiveDims, label: string }[] = [
-    { key: 'types', label: 'TYPE' },
-    { key: 'designers', label: 'DESIGNER' },
-    { key: 'colors', label: 'COULEUR' },
-    { key: 'sizes', label: 'TAILLE' },
+    { key: 'types', label: t.filters.type },
+    { key: 'designers', label: t.filters.designer },
+    { key: 'colors', label: t.filters.color },
+    { key: 'sizes', label: t.filters.size },
+  ]
+
+  const navItems = [
+    { label: t.nav.wardrobe, href: 'vestiaire' },
+    { label: t.nav.book, href: 'book' },
+    { label: t.nav.about, href: 'about' },
+    { label: t.nav.cgu, href: 'cgu' },
   ]
 
   return (
@@ -137,6 +148,8 @@ export default function HomePage() {
         .product-card { border-right: 1px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; transition: background 0.2s ease; }
         .filter-dropdown { animation: dropdownIn 0.18s ease both; }
         .dim-check:hover { background: #dddbdb !important; }
+        .lang-btn { transition: color 0.15s ease; }
+        .lang-btn:hover { color: #888 !important; }
       `}</style>
 
       {/* Header */}
@@ -146,14 +159,21 @@ export default function HomePage() {
             <div className="logo-text" style={{ fontSize: 20, fontWeight: 500, letterSpacing: '0.28em', lineHeight: 1, color: text }}>KOSTUM</div>
             <div className="logo-sub" style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginTop: 5 }}>ARCHIVES</div>
           </div>
-          <nav className="nav-links" style={{ display: 'flex', gap: 40, paddingTop: 2, flexWrap: 'nowrap' }}>
-            {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="nav-link"
+          <nav className="nav-links" style={{ display: 'flex', gap: 40, paddingTop: 2, flexWrap: 'nowrap', alignItems: 'center' }}>
+            {navItems.map(item => (
+              <a key={item.href} href={`#${item.href}`} className="nav-link"
                 style={{ fontSize: 10, letterSpacing: '0.22em', color: '#444', textDecoration: 'none', whiteSpace: 'nowrap', paddingBottom: 2, borderBottom: '1px solid transparent' }}
                 onMouseEnter={e => { e.currentTarget.style.color = text; e.currentTarget.style.borderBottomColor = text }}
                 onMouseLeave={e => { e.currentTarget.style.color = '#444'; e.currentTarget.style.borderBottomColor = 'transparent' }}
-              >{item}</a>
+              >{item.label}</a>
             ))}
+            <button onClick={toggleLang} className="lang-btn"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.18em', color: '#444', padding: 0, paddingTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <span style={{ color: lang === 'fr' ? text : '#333' }}>FR</span>
+              <span style={{ color: '#2a2a2a' }}>|</span>
+              <span style={{ color: lang === 'en' ? text : '#333' }}>EN</span>
+            </button>
           </nav>
         </div>
       </header>
@@ -161,10 +181,10 @@ export default function HomePage() {
       {/* Hero */}
       <section className="hero-section" style={{ padding: '64px 40px 44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `1px solid ${border}` }}>
         <div>
-          <h1 className="hero-title" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>VESTIAIRE</h1>
+          <h1 className="hero-title" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>{t.hero.title}</h1>
         </div>
         <p className="hero-sub" style={{ fontSize: 11, letterSpacing: '0.14em', color: muted, textAlign: 'right', lineHeight: 2.2 }}>
-          Fashion & Costumes collection for rent
+          {t.hero.sub}
         </p>
       </section>
 
@@ -172,11 +192,11 @@ export default function HomePage() {
       <section id="vestiaire" className="filters-section" style={{ padding: '16px 40px', borderBottom: `1px solid ${border}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444' }}>
-            COLLECTION&ensp;—&ensp;
-            <span style={{ color: text }}>{filtered.length} PIÈCE{filtered.length !== 1 ? 'S' : ''}</span>
+            {t.filters.collection}&ensp;—&ensp;
+            <span style={{ color: text }}>{filtered.length} {filtered.length !== 1 ? t.filters.pieces : t.filters.piece}</span>
             {totalActive > 0 && (
               <button onClick={clearFilters} style={{ background: 'none', border: 'none', fontSize: 9, letterSpacing: '0.2em', color: '#444', cursor: 'pointer', fontFamily: 'inherit', marginLeft: 16 }}>
-                EFFACER ✕
+                {t.filters.clear} ✕
               </button>
             )}
           </span>
@@ -194,7 +214,7 @@ export default function HomePage() {
                 transition: 'all 0.2s',
               }}
             >
-              FILTRER PAR
+              {t.filters.filterBy}
               <span style={{ fontSize: 8, transform: filterOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
             </button>
 
@@ -280,26 +300,26 @@ export default function HomePage() {
       {/* Grid */}
       <section style={{ minHeight: 320 }}>
         {loading ? (
-          <div style={{ padding: '100px 40px', color: '#2a2a2a', letterSpacing: '0.25em', fontSize: 10 }}>CHARGEMENT...</div>
+          <div style={{ padding: '100px 40px', color: '#2a2a2a', letterSpacing: '0.25em', fontSize: 10 }}>{t.loading}</div>
         ) : products.length === 0 ? (
           <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>VESTIAIRE</div>
-            <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>Le vestiaire se prépare</h2>
+            <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>{t.emptyWardrobe.label}</div>
+            <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>{t.emptyWardrobe.title}</h2>
             <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44, maxWidth: 360 }}>
-              Aucune pièce disponible pour le moment.<br />Revenez bientôt ou écrivez-nous pour une demande spécifique.
+              {t.emptyWardrobe.body1}<br />{t.emptyWardrobe.body2}
             </p>
             <a href="#book" className="cta-link"
               style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
-            >FAIRE UNE DEMANDE</a>
+            >{t.emptyWardrobe.cta}</a>
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>VESTIAIRE</div>
-            <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>Aucune pièce trouvée</h2>
-            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>Aucun article ne correspond à ce filtre.</p>
+            <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>{t.noResults.label}</div>
+            <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>{t.noResults.title}</h2>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>{t.noResults.body}</p>
             <button onClick={clearFilters} className="cta-link"
               style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, background: 'transparent', padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties}
-            >VOIR TOUT LE VESTIAIRE</button>
+            >{t.noResults.cta}</button>
           </div>
         ) : (
           <div key={gridKey} className="grid-products grid-animate" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -315,24 +335,22 @@ export default function HomePage() {
         <div className="section-inner" style={{ padding: '80px 40px' }}>
           <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
             <div style={{ flex: 1, maxWidth: 480 }}>
-              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>BOOK</p>
-              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>Réserver une pièce</h2>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>
-                Pour toute demande de réservation, de disponibilité ou de tarification, contactez-nous directement par email en précisant la pièce souhaitée, les dates et l'usage prévu.
-              </p>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>Nous répondons sous 24h.</p>
+              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.book.label}</p>
+              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>{t.book.title}</h2>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>{t.book.body1}</p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>{t.book.body2}</p>
               <a href="mailto:contact@kostum-archives.com" className="cta-link"
                 style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
-              >NOUS ÉCRIRE</a>
+              >{t.book.cta}</a>
             </div>
             <div style={{ flex: 1, maxWidth: 320, paddingTop: 4 }}>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>USAGE</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Shootings photo & film<br />Événements & galas<br />Projets artistiques<br />Tournages & productions</div>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.book.usageLabel}</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.book.usage.join('\n').split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</div>
               </div>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>DÉLAI</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Réservation à partir de 48h<br />avant la date souhaitée</div>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.book.leadLabel}</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.book.lead.join('\n').split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</div>
               </div>
             </div>
           </div>
@@ -344,26 +362,22 @@ export default function HomePage() {
         <div className="section-inner" style={{ padding: '80px 40px' }}>
           <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
             <div style={{ flex: 1, maxWidth: 480 }}>
-              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>ABOUT</p>
-              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>Kostum Archives</h2>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>
-                Kostum Archives est un vestiaire vintage parisien dédié à la location de vêtements pour les professionnels du cinéma, de la photographie et de l'événementiel.
-              </p>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2 }}>
-                Chaque pièce est sélectionnée pour son histoire, sa matière et son caractère singulier. Un catalogue vivant, en perpétuelle évolution, au service de projets qui demandent l'essentiel.
-              </p>
+              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.about.label}</p>
+              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>{t.about.title}</h2>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>{t.about.body1}</p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2 }}>{t.about.body2}</p>
             </div>
             <div style={{ flex: 1, maxWidth: 320, paddingTop: 4 }}>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>LOCALISATION</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Paris, France<br />Sur rendez-vous uniquement</div>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.about.locationLabel}</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.about.location.map((line, i) => <span key={i}>{line}<br /></span>)}</div>
               </div>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>CATALOGUE</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>Vêtements de créateurs<br />Pièces vintage & archive<br />Accessoires & costumes</div>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.about.catalogLabel}</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.about.catalog.map((line, i) => <span key={i}>{line}<br /></span>)}</div>
               </div>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>CONTACT</div>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.about.contactLabel}</div>
                 <a href="mailto:contact@kostum-archives.com"
                   style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2, textDecoration: 'none', transition: 'color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.color = text)}
@@ -378,15 +392,10 @@ export default function HomePage() {
       {/* CGU */}
       <section id="cgu" style={{ borderBottom: `1px solid ${border}` }}>
         <div className="section-inner" style={{ padding: '80px 40px' }}>
-          <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>CGU</p>
-          <h2 style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 40, lineHeight: 1.2 }}>Conditions Générales d'Utilisation</h2>
+          <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.cgu.label}</p>
+          <h2 style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 40, lineHeight: 1.2 }}>{t.cgu.title}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px 80px', maxWidth: 960 }}>
-            {[
-              { titre: 'Location', texte: "Les pièces sont louées pour une durée définie, convenue à l'avance. Toute prolongation doit être demandée et validée avant l'échéance." },
-              { titre: 'Dépôt de garantie', texte: "Un dépôt de garantie est demandé à la remise de chaque pièce. Il est restitué intégralement à son retour en bon état." },
-              { titre: 'Responsabilité', texte: "Le locataire est responsable de toute dégradation survenant pendant la période de location. Les frais de réparation ou de remplacement sont à sa charge." },
-              { titre: 'Annulation', texte: "Toute annulation doit être notifiée au moins 48h avant la date prévue. Passé ce délai, le dépôt de garantie pourra être retenu." },
-            ].map(({ titre, texte }) => (
+            {t.cgu.items.map(({ titre, texte }) => (
               <div key={titre} style={{ borderTop: `1px solid ${border}`, paddingTop: 20 }}>
                 <div style={{ fontSize: 10, letterSpacing: '0.2em', color: text, marginBottom: 12 }}>{titre.toUpperCase()}</div>
                 <p style={{ fontSize: 11, letterSpacing: '0.06em', color: muted, lineHeight: 2 }}>{texte}</p>

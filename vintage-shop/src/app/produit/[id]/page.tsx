@@ -5,6 +5,8 @@ import { supabase, Product } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { useLang } from '@/lib/useLang'
+import { translations } from '@/lib/i18n'
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>()
@@ -13,6 +15,8 @@ export default function ProductPage() {
   const [activeImage, setActiveImage] = useState(0)
   const [zoomed, setZoomed] = useState(false)
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 })
+  const [lang, toggleLang] = useLang()
+  const t = translations[lang].product
 
   useEffect(() => {
     const load = async () => {
@@ -32,21 +36,21 @@ export default function ProductPage() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#ededed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#999' }}>CHARGEMENT...</span>
+      <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#999' }}>{t.loading}</span>
     </div>
   )
 
   if (!product) return (
     <div style={{ minHeight: '100vh', background: '#ededed', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-      <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#999' }}>PIÈCE INTROUVABLE</span>
-      <Link href="/" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#666', textDecoration: 'none' }}>← RETOUR AU VESTIAIRE</Link>
+      <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#999' }}>{t.notFound}</span>
+      <Link href="/" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#666', textDecoration: 'none' }}>{t.backFull}</Link>
     </div>
   )
 
   const images = product.images || []
   const mainImage = images[activeImage]
-  const emailSubject = `Demande de location — ${product.name}`
-  const emailBody = `Bonjour,\n\nJe suis intéressé(e) par la pièce suivante :\n\nNom : ${product.name}${product.designer ? `\nCréateur : ${product.designer}` : ''}${product.size ? `\nTaille : ${product.size}` : ''}${product.color ? `\nCouleur : ${product.color}` : ''}\n\nMerci de me contacter pour plus d'informations.\n\nCordialement,`
+  const emailSubject = `${t.emailSubjectPrefix} — ${product.name}`
+  const emailBody = `${t.emailIntro}\n\n${t.emailName} : ${product.name}${product.designer ? `\n${t.emailDesigner} : ${product.designer}` : ''}${product.size ? `\n${t.emailSize} : ${product.size}` : ''}${product.color ? `\n${t.emailColor} : ${product.color}` : ''}\n\n${t.emailClosing}`
 
   return (
     <div style={{ minHeight: '100vh', background: '#ededed', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
@@ -85,6 +89,7 @@ export default function ProductPage() {
         .rent-btn:hover { background: #222 !important; }
         .info-btn { transition: color 0.2s ease, border-color 0.2s ease; }
         .info-btn:hover { color: #111 !important; border-color: #999 !important; }
+        .lang-toggle { transition: color 0.15s ease; }
       `}</style>
 
       {/* Header */}
@@ -93,13 +98,19 @@ export default function ProductPage() {
           onMouseEnter={e => (e.currentTarget.style.color = '#111')}
           onMouseLeave={e => (e.currentTarget.style.color = '#888')}
         >
-          {'← VESTIAIRE'}
+          {t.back}
         </Link>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 16, fontWeight: 500, letterSpacing: '0.28em', color: '#111' }}>KOSTUM</div>
           <div style={{ fontSize: 8, letterSpacing: '0.35em', color: '#999', marginTop: 2 }}>ARCHIVES</div>
         </div>
-        <div style={{ width: 80 }} />
+        <button onClick={toggleLang} className="lang-toggle"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.18em', color: '#888', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+        >
+          <span style={{ color: lang === 'fr' ? '#111' : '#bbb' }}>FR</span>
+          <span style={{ color: '#ccc' }}>|</span>
+          <span style={{ color: lang === 'en' ? '#111' : '#bbb' }}>EN</span>
+        </button>
       </header>
 
       {/* Layout */}
@@ -147,7 +158,7 @@ export default function ProductPage() {
             )}
             {!zoomed && mainImage && (
               <div style={{ position: 'absolute', bottom: 16, right: 16, fontSize: 9, letterSpacing: '0.2em', color: '#999', background: 'rgba(237,237,237,0.8)', padding: '4px 10px' }}>
-                SURVOLER POUR ZOOMER
+                {t.hoverZoom}
               </div>
             )}
           </div>
@@ -178,7 +189,7 @@ export default function ProductPage() {
 
           {product.description && (
             <div style={{ marginBottom: 48 }}>
-              <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#aaa', marginBottom: 14 }}>DESCRIPTION</div>
+              <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#aaa', marginBottom: 14 }}>{t.description}</div>
               <p style={{ fontSize: 12, letterSpacing: '0.06em', color: '#666', lineHeight: 2, margin: 0 }}>{product.description}</p>
             </div>
           )}
@@ -191,22 +202,22 @@ export default function ProductPage() {
               className="rent-btn"
               style={{ display: 'block', textAlign: 'center', background: '#111', color: '#e8e4dc', padding: '14px 28px', fontSize: 11, letterSpacing: '0.25em', textDecoration: 'none' }}
             >
-              RENT IT — NOUS CONTACTER
+              {t.rentCta}
             </a>
             <a
-              href={`mailto:contact@kostum-archives.com?subject=${encodeURIComponent('Question — ' + (product.name ?? ''))}`}
+              href={`mailto:contact@kostum-archives.com?subject=${encodeURIComponent(t.questionSubjectPrefix + ' — ' + (product.name ?? ''))}`}
               className="info-btn"
               style={{ display: 'block', textAlign: 'center', color: '#999', fontSize: 10, letterSpacing: '0.2em', textDecoration: 'none', padding: '10px', border: '1px solid #d8d8d8' }}
             >
-              POSER UNE QUESTION
+              {t.questionCta}
             </a>
           </div>
 
           <div style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid #d8d8d8' }}>
             {[
-              { label: 'DÉLAI', value: "Réservation 48h à l'avance minimum" },
-              { label: 'USAGE', value: 'Shootings, événements, tournages, projets artistiques' },
-              { label: 'CONTACT', value: 'contact@kostum-archives.com' },
+              { label: t.leadLabel, value: t.leadValue },
+              { label: t.usageLabel, value: t.usageValue },
+              { label: t.contactLabel, value: 'contact@kostum-archives.com' },
             ].map(({ label, value }) => (
               <div key={label} style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
                 <div style={{ fontSize: 9, letterSpacing: '0.2em', color: '#aaa', minWidth: 64, paddingTop: 1 }}>{label}</div>
