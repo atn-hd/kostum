@@ -9,6 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+export type Edito = {
+  id: string
+  title: string | null
+  description: string | null
+  images: string[]
+  created_at: string
+}
+
 export type Product = {
   id: string
   name: string | null

@@ -75,6 +75,7 @@ export default function DashboardPage() {
           <Link href="/admin/nouveau" style={{ border: '1px solid #e8e4dc', color: '#e8e4dc', padding: '8px 20px', fontSize: 11, letterSpacing: '0.15em', textDecoration: 'none' }}>
             + NOUVEAU
           </Link>
+          <Link href="/admin/edito" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', textDecoration: 'none' }}>ÉDITO</Link>
           <Link href="/admin/parametres" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', textDecoration: 'none' }}>PARAMÈTRES</Link>
           <Link href="/" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#444', textDecoration: 'none' }}>VITRINE</Link>
           <button onClick={async () => { await supabase.auth.signOut(); router.push('/admin') }}

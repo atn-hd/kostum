@@ -1,7 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { supabase, Product } from '@/lib/supabase'
+import { supabase, Product, Edito } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useLang } from '@/lib/useLang'
@@ -15,6 +15,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [colors, setColors] = useState({ bg: '#0a0a0a', text: '#e8e4dc' })
   const [gridKey, setGridKey] = useState(0)
+  const [editoEntries, setEditoEntries] = useState<Edito[]>([])
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [activeDims, setActiveDims] = useState<ActiveDims>({ types: true, designers: false, colors: false, sizes: false })
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({ types: [], designers: [], colors: [], sizes: [] })
@@ -33,9 +35,10 @@ export default function HomePage() {
   }, [])
 
   const loadAll = async () => {
-    const [productsRes, settingsRes] = await Promise.all([
+    const [productsRes, settingsRes, editoRes] = await Promise.all([
       supabase.from('products').select('*').eq('is_available', true).order('created_at', { ascending: false }),
       supabase.from('settings').select('*'),
+      supabase.from('edito').select('*').order('created_at', { ascending: false }),
     ])
     const list = productsRes.data || []
     setProducts(list)
@@ -44,6 +47,7 @@ export default function HomePage() {
       const text = settingsRes.data.find(s => s.key === 'text_color')
       setColors({ bg: bg?.value || '#0a0a0a', text: text?.value || '#e8e4dc' })
     }
+    setEditoEntries(editoRes.data || [])
     setLoading(false)
   }
 
@@ -88,6 +92,8 @@ export default function HomePage() {
   }
 
   const totalActive = activeFilters.types.length + activeFilters.designers.length + activeFilters.colors.length + activeFilters.sizes.length
+
+  const editoImages = editoEntries.flatMap(e => e.images ?? [])
 
   const bg = colors.bg
   const text = colors.text
@@ -163,6 +169,24 @@ export default function HomePage() {
         .dim-check:hover { background: #f0f0f0 !important; color: #111 !important; }
         .lang-btn { transition: color 0.15s ease; }
         .lang-btn:hover { color: #888 !important; }
+        .grid-edito {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          border-left: 1px solid #1a1a1a;
+          border-top: 1px solid #1a1a1a;
+        }
+        @media (max-width: 768px) {
+          .grid-edito { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        .edito-cell {
+          border-right: 1px solid #1a1a1a;
+          border-bottom: 1px solid #1a1a1a;
+          display: block; padding: 0; background: none;
+          cursor: pointer; position: relative; overflow: hidden;
+          aspect-ratio: 1/1;
+        }
+        .edito-cell img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
+        .edito-cell:hover img { transform: scale(1.04); }
       `}</style>
 
       {/* Header */}
@@ -349,32 +373,68 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* BOOK */}
+      {/* BOOK / ÉDITO */}
       <section id="book" style={{ borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
-        <div className="section-inner" style={{ padding: '80px 40px' }}>
-          <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
-            <div style={{ flex: 1, maxWidth: 480 }}>
-              <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.book.label}</p>
-              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>{t.book.title}</h2>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>{t.book.body1}</p>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>{t.book.body2}</p>
-              <a href="mailto:contact@kostum-archives.com" className="cta-link"
-                style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
-              >{t.book.cta}</a>
-            </div>
-            <div style={{ flex: 1, maxWidth: 320, paddingTop: 4 }}>
-              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.book.usageLabel}</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.book.usage.join('\n').split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</div>
-              </div>
-              <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.book.leadLabel}</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.book.lead.join('\n').split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}</div>
-              </div>
-            </div>
+        {/* Header */}
+        <div className="section-inner" style={{ padding: '80px 40px 48px' }}>
+          <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.book.label}</p>
+          <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>{t.book.title}</h2>
+          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, margin: 0 }}>{t.book.body1}</p>
+        </div>
+
+        {/* Photo grid */}
+        {editoImages.length > 0 ? (
+          <div className="grid-edito">
+            {editoImages.map((url, i) => (
+              <button key={i} className="edito-cell" onClick={() => setLightboxIdx(i)}>
+                <img src={url} alt="" />
+              </button>
+            ))}
           </div>
+        ) : (
+          <div style={{ padding: '60px 40px', borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}`, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#333' }}>COMING SOON</span>
+          </div>
+        )}
+
+        {/* Contact CTA */}
+        <div className="section-inner" style={{ padding: '48px 40px 80px' }}>
+          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>{t.book.body2}</p>
+          <a href="mailto:contact@kostum-archives.com" className="cta-link"
+            style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
+          >{t.book.cta}</a>
         </div>
       </section>
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && (
+        <div
+          onClick={() => setLightboxIdx(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <button
+            onClick={e => { e.stopPropagation(); setLightboxIdx(i => i !== null && i > 0 ? i - 1 : editoImages.length - 1) }}
+            style={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#888', fontSize: 28, cursor: 'pointer', padding: 16, lineHeight: 1 }}
+          >‹</button>
+          <img
+            src={editoImages[lightboxIdx]}
+            alt=""
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '88vw', maxHeight: '88vh', objectFit: 'contain', display: 'block' }}
+          />
+          <button
+            onClick={e => { e.stopPropagation(); setLightboxIdx(i => i !== null && i < editoImages.length - 1 ? i + 1 : 0) }}
+            style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#888', fontSize: 28, cursor: 'pointer', padding: 16, lineHeight: 1 }}
+          >›</button>
+          <button
+            onClick={() => setLightboxIdx(null)}
+            style={{ position: 'absolute', top: 20, right: 24, background: 'none', border: 'none', color: '#666', fontSize: 20, cursor: 'pointer', padding: 8, lineHeight: 1, letterSpacing: '0.1em' }}
+          >✕</button>
+          <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', fontSize: 10, letterSpacing: '0.2em', color: '#444' }}>
+            {lightboxIdx + 1} / {editoImages.length}
+          </div>
+        </div>
+      )}
 
       {/* ABOUT */}
       <section id="about" style={{ borderBottom: `1px solid ${border}` }}>
