@@ -12,6 +12,8 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+    minimumCacheTTL: 60,
+    qualities: [100],
   },
 }
 module.exports = nextConfig

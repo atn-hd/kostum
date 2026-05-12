@@ -132,7 +132,7 @@ export default function ProductPage() {
                 src={mainImage}
                 alt={product.name ?? ''}
                 fill
-                sizes="60vw"
+                sizes="100vw"
                 priority
                 quality={100}
                 style={{
