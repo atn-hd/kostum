@@ -160,7 +160,7 @@ export default function HomePage() {
           transition: background 0.2s ease;
         }
         .filter-dropdown { animation: dropdownIn 0.18s ease both; }
-        .dim-check:hover { background: #dddbdb !important; }
+        .dim-check:hover { background: #f0f0f0 !important; color: #111 !important; }
         .lang-btn { transition: color 0.15s ease; }
         .lang-btn:hover { color: #888 !important; }
       `}</style>
@@ -243,8 +243,9 @@ export default function HomePage() {
                     onClick={() => toggleDim(d.key)}
                     className="dim-check"
                     style={{
-                      width: '100%', background: activeDims[d.key] ? '#1a1a1a' : 'transparent',
-                      border: 'none', color: activeDims[d.key] ? text : '#666',
+                      width: '100%', background: 'transparent',
+                      border: 'none', borderLeft: activeDims[d.key] ? `2px solid ${text}` : '2px solid transparent',
+                      color: activeDims[d.key] ? text : '#666',
                       padding: '10px 20px', fontSize: 10, letterSpacing: '0.2em',
                       cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                       display: 'flex', alignItems: 'center', gap: 10,
