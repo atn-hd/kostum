@@ -52,7 +52,7 @@ export default function NouvelArticlePage() {
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage.from('products').upload(fileName, file)
+      const { error } = await supabase.storage.from('products').upload(fileName, file, { contentType: file.type })
       if (error) {
         failed++
       } else {
