@@ -144,8 +144,19 @@ export default function HomePage() {
         .cta-link { display: inline-block; transition: background 0.22s ease, color 0.22s ease; }
         .cta-link:hover { background: var(--text) !important; color: var(--bg) !important; }
         .nav-link { transition: color 0.2s ease; }
-        .grid-products { border-top: 1px solid #1a1a1a; border-left: 1px solid #1a1a1a; }
-        .product-card { border-right: 1px solid #1a1a1a !important; border-bottom: 1px solid #1a1a1a !important; transition: background 0.2s ease; }
+        .grid-products {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          border-left: 1px solid #1a1a1a;
+          border-top: 1px solid #1a1a1a;
+        }
+        .product-card {
+          border-right: 1px solid #1a1a1a !important;
+          border-bottom: 1px solid #1a1a1a !important;
+          display: flex;
+          flex-direction: column;
+          transition: background 0.2s ease;
+        }
         .filter-dropdown { animation: dropdownIn 0.18s ease both; }
         .dim-check:hover { background: #dddbdb !important; }
         .lang-btn { transition: color 0.15s ease; }
@@ -322,7 +333,7 @@ export default function HomePage() {
             >{t.noResults.cta}</button>
           </div>
         ) : (
-          <div key={gridKey} className="grid-products grid-animate" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div key={gridKey} className="grid-products grid-animate">
             {filtered.map((product, i) => (
               <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} muted={muted} />
             ))}
@@ -365,7 +376,9 @@ export default function HomePage() {
               <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.about.label}</p>
               <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>{t.about.title}</h2>
               <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>{t.about.body1}</p>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2 }}>{t.about.body2}</p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>{t.about.body2}</p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>{t.about.body3}</p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2 }}>{t.about.body4}</p>
             </div>
             <div style={{ flex: 1, maxWidth: 320, paddingTop: 4 }}>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
@@ -425,7 +438,7 @@ function ProductCard({ product, index, bg, text, border, muted }: { product: Pro
   const secondImage = product.images?.[1]
 
   return (
-    <Link href={`/produit/${product.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/produit/${product.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="product-card"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -445,10 +458,10 @@ function ProductCard({ product, index, bg, text, border, muted }: { product: Pro
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e1e1e', fontSize: 40, letterSpacing: '0.2em' }}>—</div>
           )}
         </div>
-        <div style={{ padding: '18px 20px 22px' }}>
+        <div style={{ padding: '18px 20px 22px', flex: 1, overflow: 'hidden' }}>
           <div style={{ fontSize: 11, letterSpacing: '0.18em', color: text, marginBottom: 6, fontWeight: 400 }}>{product.name?.toUpperCase()}</div>
           {product.designer && (
-            <div style={{ fontSize: 10, letterSpacing: '0.12em', color: '#444', marginBottom: 14 }}>{product.designer?.toUpperCase()}</div>
+            <div style={{ fontSize: 10, letterSpacing: '0.12em', color: '#444', marginBottom: 14, overflow: 'hidden' }}>{product.designer?.toUpperCase()}</div>
           )}
           <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {product.size && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.size}</span>}
