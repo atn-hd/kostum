@@ -88,8 +88,8 @@ export const translations = {
     },
   },
   en: {
-    nav: { wardrobe: 'WARDROBE', book: 'BOOK', about: 'ABOUT', cgu: 'T&C' },
-    hero: { title: 'WARDROBE', sub: 'Fashion & Costumes collection for rent' },
+    nav: { wardrobe: 'VESTIAIRE', book: 'BOOK', about: 'ABOUT', cgu: 'T&C' },
+    hero: { title: 'VESTIAIRE', sub: 'Fashion & Costumes collection for rent' },
     filters: {
       collection: 'COLLECTION',
       piece: 'PIECE',
@@ -103,14 +103,14 @@ export const translations = {
     },
     loading: 'LOADING...',
     emptyWardrobe: {
-      label: 'WARDROBE',
+      label: 'VESTIAIRE',
       title: 'The wardrobe is getting ready',
       body1: 'No items available at the moment.',
       body2: 'Check back soon or reach out for a specific request.',
       cta: 'MAKE A REQUEST',
     },
     noResults: {
-      label: 'WARDROBE',
+      label: 'VESTIAIRE',
       title: 'No items found',
       body: 'No items match this filter.',
       cta: 'SEE ALL ITEMS',
@@ -150,10 +150,10 @@ export const translations = {
       ],
     },
     product: {
-      back: '← WARDROBE',
+      back: '← VESTIAIRE',
       loading: 'LOADING...',
       notFound: 'ITEM NOT FOUND',
-      backFull: '← BACK TO WARDROBE',
+      backFull: '← BACK TO VESTIAIRE',
       hoverZoom: 'HOVER TO ZOOM',
       rentCta: 'RENT IT — CONTACT US',
       questionCta: 'ASK A QUESTION',
@@ -176,3 +176,24 @@ export const translations = {
 }
 
 export type Translations = typeof translations.fr
+
+const COLOR_FR_TO_EN: Record<string, string> = {
+  noir: 'black', blanc: 'white', bleu: 'blue', rouge: 'red',
+  vert: 'green', jaune: 'yellow', rose: 'pink', beige: 'beige',
+  gris: 'grey', marron: 'brown', orange: 'orange',
+}
+
+const CATEGORY_FR_TO_EN: Record<string, string> = {
+  tops: 'tops', pantalons: 'pants', robes: 'dresses', bijoux: 'jewelry',
+  accessoires: 'accessories', manteaux: 'coats', ensemble: 'set', autres: 'others',
+}
+
+export function translateColor(value: string, lang: Lang): string {
+  if (lang === 'fr') return value
+  return COLOR_FR_TO_EN[value.toLowerCase()] ?? value
+}
+
+export function translateCategory(value: string, lang: Lang): string {
+  if (lang === 'fr') return value
+  return CATEGORY_FR_TO_EN[value.toLowerCase()] ?? value
+}

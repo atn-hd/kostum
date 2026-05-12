@@ -5,7 +5,7 @@ import { supabase, Product } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useLang } from '@/lib/useLang'
-import { translations } from '@/lib/i18n'
+import { translations, translateColor, translateCategory } from '@/lib/i18n'
 
 type ActiveDims = { types: boolean, designers: boolean, colors: boolean, sizes: boolean }
 type ActiveFilters = { types: string[], designers: string[], colors: string[], sizes: string[] }
@@ -147,6 +147,7 @@ export default function HomePage() {
         .grid-products {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
+          align-items: stretch;
           border-left: 1px solid #1a1a1a;
           border-top: 1px solid #1a1a1a;
         }
@@ -155,6 +156,7 @@ export default function HomePage() {
           border-bottom: 1px solid #1a1a1a !important;
           display: flex;
           flex-direction: column;
+          height: 100%;
           transition: background 0.2s ease;
         }
         .filter-dropdown { animation: dropdownIn 0.18s ease both; }
@@ -269,6 +271,11 @@ export default function HomePage() {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {availableFilters[d.key].map(f => {
                 const active = activeFilters[d.key].includes(f)
+                const label = d.key === 'colors'
+                  ? translateColor(f, lang).toUpperCase()
+                  : d.key === 'types'
+                  ? translateCategory(f, lang).toUpperCase()
+                  : f.toUpperCase()
                 return (
                   <button key={f} onClick={() => toggleFilter(d.key, f)}
                     className="filter-btn"
@@ -279,7 +286,7 @@ export default function HomePage() {
                       padding: '5px 14px', fontSize: 10, letterSpacing: '0.18em',
                       cursor: 'pointer', fontFamily: 'inherit',
                     }}
-                  >{f}</button>
+                  >{label}</button>
                 )
               })}
             </div>
@@ -335,7 +342,7 @@ export default function HomePage() {
         ) : (
           <div key={gridKey} className="grid-products grid-animate">
             {filtered.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} muted={muted} />
+              <ProductCard key={product.id} product={product} index={i} bg={bg} text={text} border={border} muted={muted} lang={lang} />
             ))}
           </div>
         )}
@@ -432,7 +439,7 @@ export default function HomePage() {
   )
 }
 
-function ProductCard({ product, index, bg, text, border, muted }: { product: Product; index: number; bg: string; text: string; border: string; muted: string }) {
+function ProductCard({ product, index, bg, text, border, muted, lang }: { product: Product; index: number; bg: string; text: string; border: string; muted: string; lang: 'fr' | 'en' }) {
   const [hovered, setHovered] = useState(false)
   const firstImage = product.images?.[0]
   const secondImage = product.images?.[1]
@@ -444,7 +451,7 @@ function ProductCard({ product, index, bg, text, border, muted }: { product: Pro
         onMouseLeave={() => setHovered(false)}
         style={{ cursor: 'pointer', background: bg }}
       >
-        <div style={{ position: 'relative', aspectRatio: '3/4', background: '#0d0d0d', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', aspectRatio: '3/4', flexShrink: 0, background: '#0d0d0d', overflow: 'hidden' }}>
           {firstImage ? (
             <>
               <Image src={firstImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
@@ -458,15 +465,15 @@ function ProductCard({ product, index, bg, text, border, muted }: { product: Pro
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e1e1e', fontSize: 40, letterSpacing: '0.2em' }}>—</div>
           )}
         </div>
-        <div style={{ padding: '18px 20px 22px', flex: 1, overflow: 'hidden' }}>
+        <div style={{ padding: '18px 20px 22px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', minHeight: 140 }}>
           <div style={{ fontSize: 11, letterSpacing: '0.18em', color: text, marginBottom: 6, fontWeight: 400 }}>{product.name?.toUpperCase()}</div>
           {product.designer && (
             <div style={{ fontSize: 10, letterSpacing: '0.12em', color: '#444', marginBottom: 14, overflow: 'hidden' }}>{product.designer?.toUpperCase()}</div>
           )}
           <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {product.size && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.size}</span>}
-            {product.color && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.color?.toUpperCase()}</span>}
-            {product.category && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.category?.toUpperCase()}</span>}
+            {product.color && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{translateColor(product.color, lang).toUpperCase()}</span>}
+            {product.category && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{translateCategory(product.category, lang).toUpperCase()}</span>}
           </div>
         </div>
       </div>
