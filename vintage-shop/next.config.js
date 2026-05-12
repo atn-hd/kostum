@@ -4,7 +4,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const nextConfig = {
-  output: 'standalone',
   images: {
     remotePatterns: [
       {

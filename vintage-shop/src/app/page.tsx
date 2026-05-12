@@ -1,31 +1,40 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase, Product } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 
+type ActiveDims = { types: boolean, designers: boolean, colors: boolean, sizes: boolean }
+type ActiveFilters = { types: string[], designers: string[], colors: string[], sizes: string[] }
+
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
-  const [filtered, setFiltered] = useState<Product[]>([])
-  const [activeFilters, setActiveFilters] = useState<string[]>(['TOUT'])
-  const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [colors, setColors] = useState({ bg: '#0a0a0a', text: '#e8e4dc' })
   const [gridKey, setGridKey] = useState(0)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [activeDims, setActiveDims] = useState<ActiveDims>({ types: true, designers: false, colors: false, sizes: false })
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({ types: [], designers: [], colors: [], sizes: [] })
+  const filterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { loadAll() }, [])
 
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const loadAll = async () => {
-    const [productsRes, categoriesRes, settingsRes] = await Promise.all([
+    const [productsRes, settingsRes] = await Promise.all([
       supabase.from('products').select('*').eq('is_available', true).order('created_at', { ascending: false }),
-      supabase.from('categories').select('name').order('name'),
       supabase.from('settings').select('*'),
     ])
     const list = productsRes.data || []
     setProducts(list)
-    setFiltered(list)
-    if (categoriesRes.data) setCategories(categoriesRes.data.map(c => c.name))
     if (settingsRes.data) {
       const bg = settingsRes.data.find(s => s.key === 'bg_color')
       const text = settingsRes.data.find(s => s.key === 'text_color')
@@ -34,30 +43,59 @@ export default function HomePage() {
     setLoading(false)
   }
 
-  const toggleFilter = (f: string, allProducts: Product[] = products) => {
+  const availableFilters = useMemo(() => {
+    const types = Array.from(new Set(products.map(p => p.category).filter(Boolean) as string[])).sort()
+    const designers = Array.from(new Set(products.map(p => p.designer).filter(Boolean) as string[])).sort()
+    const cols = Array.from(new Set(products.map(p => p.color).filter(Boolean) as string[])).sort()
+    const sizes = Array.from(new Set(products.map(p => p.size).filter(Boolean) as string[])).sort()
+    return { types, designers, colors: cols, sizes }
+  }, [products])
+
+  const filtered = useMemo(() => {
+    return products.filter(p => {
+      if (activeFilters.types.length > 0 && !activeFilters.types.some(f => p.category?.toUpperCase() === f.toUpperCase())) return false
+      if (activeFilters.designers.length > 0 && !activeFilters.designers.some(f => p.designer?.toUpperCase() === f.toUpperCase())) return false
+      if (activeFilters.colors.length > 0 && !activeFilters.colors.some(f => p.color?.toUpperCase() === f.toUpperCase())) return false
+      if (activeFilters.sizes.length > 0 && !activeFilters.sizes.includes(p.size ?? '')) return false
+      return true
+    })
+  }, [products, activeFilters])
+
+  const toggleFilter = (dim: keyof ActiveFilters, value: string) => {
     setGridKey(k => k + 1)
-    if (f === 'TOUT') {
-      setActiveFilters(['TOUT'])
-      setFiltered(allProducts)
-      return
-    }
-    const current = activeFilters.filter(x => x !== 'TOUT')
-    const next = current.includes(f) ? current.filter(x => x !== f) : [...current, f]
-    if (next.length === 0) {
-      setActiveFilters(['TOUT'])
-      setFiltered(allProducts)
-    } else {
-      setActiveFilters(next)
-      setFiltered(allProducts.filter(p =>
-        next.some(filter => p.category?.toUpperCase() === filter.toUpperCase())
-      ))
+    setActiveFilters(prev => {
+      const current = prev[dim]
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value]
+      return { ...prev, [dim]: next }
+    })
+  }
+
+  const toggleDim = (dim: keyof ActiveDims) => {
+    setActiveDims(prev => ({ ...prev, [dim]: !prev[dim] }))
+    if (activeDims[dim]) {
+      setActiveFilters(prev => ({ ...prev, [dim]: [] }))
+      setGridKey(k => k + 1)
     }
   }
+
+  const clearFilters = () => {
+    setGridKey(k => k + 1)
+    setActiveFilters({ types: [], designers: [], colors: [], sizes: [] })
+  }
+
+  const totalActive = activeFilters.types.length + activeFilters.designers.length + activeFilters.colors.length + activeFilters.sizes.length
 
   const bg = colors.bg
   const text = colors.text
   const muted = '#555'
   const border = '#1a1a1a'
+
+  const dimOptions: { key: keyof ActiveDims, label: string }[] = [
+    { key: 'types', label: 'TYPE' },
+    { key: 'designers', label: 'DESIGNER' },
+    { key: 'colors', label: 'COULEUR' },
+    { key: 'sizes', label: 'TAILLE' },
+  ]
 
   return (
     <div style={{ minHeight: '100vh', background: bg, color: text, fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
@@ -70,37 +108,35 @@ export default function HomePage() {
           .logo-text { font-size: 16px !important; }
           .logo-sub { font-size: 8px !important; }
           .hero-section { padding: 40px 20px 28px !important; flex-direction: column !important; gap: 16px !important; align-items: flex-start !important; }
-          .hero-title { font-size: 36px !important; }
+          .hero-title { font-size: 28px !important; }
           .hero-sub { text-align: left !important; font-size: 11px !important; }
-          .filters-section { padding: 0 20px 20px !important; }
+          .filters-section { padding: 0 20px 16px !important; }
           .footer-inner { padding: 24px 20px !important; }
           .section-inner { padding: 60px 20px !important; }
           .section-two-col { flex-direction: column !important; gap: 40px !important; }
+          .filter-dropdown { right: 0; width: 220px !important; }
         }
         @keyframes gridFadeIn {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes filterPop {
-          0%   { transform: scale(0.94); }
-          55%  { transform: scale(1.04); }
-          100% { transform: scale(1); }
+        @keyframes dropdownIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .grid-animate { animation: gridFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
         .filter-btn {
-          transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.15s ease;
-          will-change: transform;
+          transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
         }
         .filter-btn:hover { transform: translateY(-1px); }
-        .filter-btn:active { transform: scale(0.96) !important; }
-        .filter-btn.is-active { animation: filterPop 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .cta-link {
-          display: inline-block;
-          transition: background 0.22s ease, color 0.22s ease;
-        }
+        .filter-btn:active { transform: scale(0.96); }
+        .cta-link { display: inline-block; transition: background 0.22s ease, color 0.22s ease; }
         .cta-link:hover { background: var(--text) !important; color: var(--bg) !important; }
         .nav-link { transition: color 0.2s ease; }
-        .product-card { transition: background 0.2s ease; }
+        .grid-products { border-top: 1px solid #1a1a1a; border-left: 1px solid #1a1a1a; }
+        .product-card { border-right: 1px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; transition: background 0.2s ease; }
+        .filter-dropdown { animation: dropdownIn 0.18s ease both; }
+        .dim-check:hover { background: #dddbdb !important; }
       `}</style>
 
       {/* Header */}
@@ -112,8 +148,7 @@ export default function HomePage() {
           </div>
           <nav className="nav-links" style={{ display: 'flex', gap: 40, paddingTop: 2, flexWrap: 'nowrap' }}>
             {['VESTIAIRE', 'BOOK', 'ABOUT', 'CGU'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`}
-                className="nav-link"
+              <a key={item} href={`#${item.toLowerCase()}`} className="nav-link"
                 style={{ fontSize: 10, letterSpacing: '0.22em', color: '#444', textDecoration: 'none', whiteSpace: 'nowrap', paddingBottom: 2, borderBottom: '1px solid transparent' }}
                 onMouseEnter={e => { e.currentTarget.style.color = text; e.currentTarget.style.borderBottomColor = text }}
                 onMouseLeave={e => { e.currentTarget.style.color = '#444'; e.currentTarget.style.borderBottomColor = 'transparent' }}
@@ -126,45 +161,99 @@ export default function HomePage() {
       {/* Hero */}
       <section className="hero-section" style={{ padding: '64px 40px 44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `1px solid ${border}` }}>
         <div>
-          <p style={{ fontSize: 10, letterSpacing: '0.3em', color: '#444', marginBottom: 20 }}>PARIS — VESTIAIRE VINTAGE</p>
-          <h1 className="hero-title" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>
-            VESTIAIRE
-          </h1>
+          <h1 className="hero-title" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1, color: text, margin: 0 }}>VESTIAIRE</h1>
         </div>
         <p className="hero-sub" style={{ fontSize: 11, letterSpacing: '0.14em', color: muted, textAlign: 'right', lineHeight: 2.2 }}>
-          Fashion & Costumes<br />collection for rent
+          Fashion & Costumes collection for rent
         </p>
       </section>
 
       {/* Filters */}
-      <section id="vestiaire" className="filters-section" style={{ padding: '20px 40px 20px', borderBottom: `1px solid ${border}` }}>
+      <section id="vestiaire" className="filters-section" style={{ padding: '16px 40px', borderBottom: `1px solid ${border}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444' }}>
             COLLECTION&ensp;—&ensp;
-            <span style={{ color: activeFilters[0] === 'TOUT' ? '#444' : text, transition: 'color 0.2s' }}>
-              {filtered.length} PIÈCE{filtered.length !== 1 ? 'S' : ''}
-            </span>
+            <span style={{ color: text }}>{filtered.length} PIÈCE{filtered.length !== 1 ? 'S' : ''}</span>
+            {totalActive > 0 && (
+              <button onClick={clearFilters} style={{ background: 'none', border: 'none', fontSize: 9, letterSpacing: '0.2em', color: '#444', cursor: 'pointer', fontFamily: 'inherit', marginLeft: 16 }}>
+                EFFACER ✕
+              </button>
+            )}
           </span>
-          <span style={{ fontSize: 10, letterSpacing: '0.25em', color: '#333' }}>FILTRER PAR CATÉGORIE</span>
+
+          <div ref={filterRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setFilterOpen(o => !o)}
+              style={{
+                background: filterOpen ? text : 'transparent',
+                border: `1px solid ${filterOpen ? text : '#2a2a2a'}`,
+                color: filterOpen ? bg : '#555',
+                padding: '6px 16px', fontSize: 10, letterSpacing: '0.22em',
+                cursor: 'pointer', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.2s',
+              }}
+            >
+              FILTRER PAR
+              <span style={{ fontSize: 8, transform: filterOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+            </button>
+
+            {filterOpen && (
+              <div className="filter-dropdown" style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                background: bg, border: `1px solid ${border}`,
+                width: 200, zIndex: 50, padding: '8px 0',
+              }}>
+                {dimOptions.filter(d => availableFilters[d.key].length > 0).map(d => (
+                  <button
+                    key={d.key}
+                    onClick={() => toggleDim(d.key)}
+                    className="dim-check"
+                    style={{
+                      width: '100%', background: activeDims[d.key] ? '#1a1a1a' : 'transparent',
+                      border: 'none', color: activeDims[d.key] ? text : '#666',
+                      padding: '10px 20px', fontSize: 10, letterSpacing: '0.2em',
+                      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <span style={{
+                      width: 12, height: 12, border: `1px solid ${activeDims[d.key] ? text : '#333'}`,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, fontSize: 8,
+                      color: activeDims[d.key] ? text : 'transparent',
+                    }}>✓</span>
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {['TOUT', ...categories].map(f => {
-            const active = activeFilters.includes(f)
-            return (
-              <button key={f} onClick={() => toggleFilter(f)}
-                className={`filter-btn${active ? ' is-active' : ''}`}
-                style={{
-                  background: active ? text : 'transparent',
-                  border: '1px solid',
-                  borderColor: active ? text : '#2a2a2a',
-                  color: active ? bg : '#555',
-                  padding: '5px 14px', fontSize: 10, letterSpacing: '0.18em',
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}
-              >{f}</button>
-            )
-          })}
-        </div>
+
+        {dimOptions.map(d => activeDims[d.key] && availableFilters[d.key].length > 0 && (
+          <div key={d.key} style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#333', marginBottom: 7 }}>{d.label}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {availableFilters[d.key].map(f => {
+                const active = activeFilters[d.key].includes(f)
+                return (
+                  <button key={f} onClick={() => toggleFilter(d.key, f)}
+                    className="filter-btn"
+                    style={{
+                      background: active ? text : 'transparent',
+                      border: '1px solid', borderColor: active ? text : '#2a2a2a',
+                      color: active ? bg : '#555',
+                      padding: '5px 14px', fontSize: 10, letterSpacing: '0.18em',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >{f}</button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </section>
 
       {/* Schema.org */}
@@ -193,8 +282,7 @@ export default function HomePage() {
         {loading ? (
           <div style={{ padding: '100px 40px', color: '#2a2a2a', letterSpacing: '0.25em', fontSize: 10 }}>CHARGEMENT...</div>
         ) : products.length === 0 ? (
-          /* État vide — catalogue vide */
-          <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
+          <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>VESTIAIRE</div>
             <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>Le vestiaire se prépare</h2>
             <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44, maxWidth: 360 }}>
@@ -205,14 +293,11 @@ export default function HomePage() {
             >FAIRE UNE DEMANDE</a>
           </div>
         ) : filtered.length === 0 ? (
-          /* État vide — aucun résultat pour ce filtre */
           <div style={{ padding: '100px 40px', borderBottom: `1px solid ${border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <div style={{ fontSize: 9, letterSpacing: '0.35em', color: '#333', marginBottom: 28 }}>VESTIAIRE</div>
             <h2 style={{ fontSize: 28, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 16, lineHeight: 1.2 }}>Aucune pièce trouvée</h2>
-            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>
-              Aucun article ne correspond à ce filtre.
-            </p>
-            <button onClick={() => toggleFilter('TOUT')} className="cta-link"
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>Aucun article ne correspond à ce filtre.</p>
+            <button onClick={clearFilters} className="cta-link"
               style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, background: 'transparent', padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', cursor: 'pointer', fontFamily: 'inherit' } as React.CSSProperties}
             >VOIR TOUT LE VESTIAIRE</button>
           </div>
@@ -231,15 +316,11 @@ export default function HomePage() {
           <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
             <div style={{ flex: 1, maxWidth: 480 }}>
               <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>BOOK</p>
-              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>
-                Réserver une pièce
-              </h2>
+              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>Réserver une pièce</h2>
               <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>
                 Pour toute demande de réservation, de disponibilité ou de tarification, contactez-nous directement par email en précisant la pièce souhaitée, les dates et l'usage prévu.
               </p>
-              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>
-                Nous répondons sous 24h.
-              </p>
+              <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>Nous répondons sous 24h.</p>
               <a href="mailto:contact@kostum-archives.com" className="cta-link"
                 style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
               >NOUS ÉCRIRE</a>
@@ -264,9 +345,7 @@ export default function HomePage() {
           <div className="section-two-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 80 }}>
             <div style={{ flex: 1, maxWidth: 480 }}>
               <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>ABOUT</p>
-              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>
-                Kostum Archives
-              </h2>
+              <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>Kostum Archives</h2>
               <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 20 }}>
                 Kostum Archives est un vestiaire vintage parisien dédié à la location de vêtements pour les professionnels du cinéma, de la photographie et de l'événementiel.
               </p>
@@ -300,9 +379,7 @@ export default function HomePage() {
       <section id="cgu" style={{ borderBottom: `1px solid ${border}` }}>
         <div className="section-inner" style={{ padding: '80px 40px' }}>
           <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>CGU</p>
-          <h2 style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 40, lineHeight: 1.2 }}>
-            Conditions Générales d'Utilisation
-          </h2>
+          <h2 style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 40, lineHeight: 1.2 }}>Conditions Générales d'Utilisation</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px 80px', maxWidth: 960 }}>
             {[
               { titre: 'Location', texte: "Les pièces sont louées pour une durée définie, convenue à l'avance. Toute prolongation doit être demandée et validée avant l'échéance." },
@@ -326,7 +403,7 @@ export default function HomePage() {
           <Link href="/admin" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#2a2a2a', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#555')}
             onMouseLeave={e => (e.currentTarget.style.color = '#2a2a2a')}
-          >BACK OFFICE</Link>
+          >LOGIN</Link>
         </div>
       </footer>
     </div>
@@ -339,42 +416,38 @@ function ProductCard({ product, index, bg, text, border, muted }: { product: Pro
   const secondImage = product.images?.[1]
 
   return (
-    <div
-      className="product-card"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        borderRight: (index + 1) % 3 !== 0 ? `1px solid ${border}` : 'none',
-        borderBottom: `1px solid ${border}`,
-        cursor: 'pointer',
-        background: bg,
-      }}
-    >
-      <div style={{ position: 'relative', aspectRatio: '3/4', background: '#0d0d0d', overflow: 'hidden' }}>
-        {firstImage ? (
-          <>
-            <Image src={firstImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
-              style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
-            {secondImage && (
-              <Image src={secondImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
-                style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
-            )}
-          </>
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e1e1e', fontSize: 40, letterSpacing: '0.2em' }}>—</div>
-        )}
-      </div>
-      <div style={{ padding: '18px 20px 22px' }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.18em', color: text, marginBottom: 6, fontWeight: 400 }}>{product.name?.toUpperCase()}</div>
-        {product.designer && (
-          <div style={{ fontSize: 10, letterSpacing: '0.12em', color: '#444', marginBottom: 14 }}>{product.designer?.toUpperCase()}</div>
-        )}
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-          {product.size && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.size}</span>}
-          {product.color && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.color?.toUpperCase()}</span>}
-          {product.category && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.category?.toUpperCase()}</span>}
+    <Link href={`/produit/${product.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+      <div className="product-card"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ cursor: 'pointer', background: bg }}
+      >
+        <div style={{ position: 'relative', aspectRatio: '3/4', background: '#0d0d0d', overflow: 'hidden' }}>
+          {firstImage ? (
+            <>
+              <Image src={firstImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
+                style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
+              {secondImage && (
+                <Image src={secondImage} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw"
+                  style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
+              )}
+            </>
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e1e1e', fontSize: 40, letterSpacing: '0.2em' }}>—</div>
+          )}
+        </div>
+        <div style={{ padding: '18px 20px 22px' }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.18em', color: text, marginBottom: 6, fontWeight: 400 }}>{product.name?.toUpperCase()}</div>
+          {product.designer && (
+            <div style={{ fontSize: 10, letterSpacing: '0.12em', color: '#444', marginBottom: 14 }}>{product.designer?.toUpperCase()}</div>
+          )}
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+            {product.size && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.size}</span>}
+            {product.color && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.color?.toUpperCase()}</span>}
+            {product.category && <span style={{ fontSize: 9, letterSpacing: '0.15em', border: '1px solid #1e1e1e', padding: '3px 8px', color: '#444' }}>{product.category?.toUpperCase()}</span>}
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
