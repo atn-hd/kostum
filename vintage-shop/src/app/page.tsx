@@ -381,7 +381,7 @@ export default function HomePage() {
         {/* Header */}
         <div className="section-inner" style={{ padding: '80px 40px 48px' }}>
           <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.book.label}</p>
-          <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 0 }}>ARCHIVE SHOTS</p>
+          <p style={{ fontSize: 22, letterSpacing: '0.08em', color: '#444', marginBottom: 0 }}>ARCHIVES SHOTS</p>
         </div>
 
         {/* Photo grid */}
@@ -460,7 +460,7 @@ export default function HomePage() {
               </div>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24, marginBottom: 24 }}>
                 <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.about.catalogLabel}</div>
-                <div style={{ fontSize: 11, letterSpacing: '0.08em', color: muted, lineHeight: 2 }}>{t.about.catalog.map((line, i) => <span key={i}>{line}<br /></span>)}</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.01em', color: muted, lineHeight: 2 }}>{t.about.catalog.map((line, i) => <span key={i}>{line}<br /></span>)}</div>
               </div>
               <div style={{ borderTop: `1px solid ${border}`, paddingTop: 24 }}>
                 <div style={{ fontSize: 9, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{t.about.contactLabel}</div>
