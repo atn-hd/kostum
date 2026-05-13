@@ -381,7 +381,7 @@ export default function HomePage() {
         {/* Header */}
         <div className="section-inner" style={{ padding: '80px 40px 48px' }}>
           <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.book.label}</p>
-          <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 0, lineHeight: 1.15 }}>{t.book.title}</h2>
+          <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 0 }}>ARCHIVE SHOTS</p>
         </div>
 
         {/* Photo grid */}
@@ -402,6 +402,7 @@ export default function HomePage() {
 
         {/* Contact CTA */}
         <div className="section-inner" style={{ padding: '48px 40px 80px' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.2 }}>{t.book.title}</h2>
           <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>{t.book.body1}</p>
           <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>{t.book.body2}</p>
           <a href="mailto:contact@kostum-archives.com" className="cta-link"
