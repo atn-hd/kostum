@@ -93,7 +93,7 @@ export default function HomePage() {
 
   const totalActive = activeFilters.types.length + activeFilters.designers.length + activeFilters.colors.length + activeFilters.sizes.length
 
-  const editoImages = editoEntries.flatMap(e => e.images ?? [])
+  const editoImages = editoEntries.flatMap(e => (e.images ?? []).map(url => ({ url, description: e.description ?? '' })))
 
   const bg = colors.bg
   const text = colors.text
@@ -188,6 +188,8 @@ export default function HomePage() {
         }
         .edito-cell img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
         .edito-cell:hover img { transform: scale(1.04); }
+        .edito-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(237,237,237,0.9); padding: 12px 16px; font-size: 10px; letter-spacing: 0.1em; color: #111; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .edito-cell:hover .edito-overlay { opacity: 1; }
       `}</style>
 
       {/* Header */}
@@ -386,9 +388,10 @@ export default function HomePage() {
         {/* Photo grid */}
         {editoImages.length > 0 ? (
           <div className="grid-edito">
-            {editoImages.map((url, i) => (
+            {editoImages.map((img, i) => (
               <button key={i} className="edito-cell" onClick={() => setLightboxIdx(i)}>
-                <img src={url} alt="" />
+                <img src={img.url} alt="" />
+                {img.description && <div className="edito-overlay">{img.description}</div>}
               </button>
             ))}
           </div>
@@ -418,7 +421,7 @@ export default function HomePage() {
             style={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#888', fontSize: 28, cursor: 'pointer', padding: 16, lineHeight: 1 }}
           >‹</button>
           <img
-            src={editoImages[lightboxIdx]}
+            src={editoImages[lightboxIdx].url}
             alt=""
             onClick={e => e.stopPropagation()}
             style={{ maxWidth: '88vw', maxHeight: '88vh', objectFit: 'contain', display: 'block' }}

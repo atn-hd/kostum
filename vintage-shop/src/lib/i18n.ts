@@ -2,7 +2,7 @@ export type Lang = 'fr' | 'en'
 
 export const translations = {
   fr: {
-    nav: { wardrobe: 'VESTIAIRE', book: 'BOOK', about: 'ABOUT', cgu: 'CGU' },
+    nav: { wardrobe: 'VESTIAIRE', book: 'ÉDITO', about: 'ABOUT', cgu: 'CGU' },
     hero: { title: 'VESTIAIRE', sub: 'Fashion & Costumes collection for rent' },
     filters: {
       collection: 'COLLECTION',
@@ -30,7 +30,7 @@ export const translations = {
       cta: 'VOIR TOUT LE VESTIAIRE',
     },
     book: {
-      label: 'BOOK',
+      label: 'ÉDITO',
       title: 'Réserver une pièce',
       body1: "Pour toute demande de réservation, de disponibilité ou de tarification, contactez-nous directement par email en précisant la pièce souhaitée, les dates et l'usage prévu.",
       body2: 'Nous répondons sous 24h.',
@@ -48,7 +48,7 @@ export const translations = {
       body3: "Chez KOSTUM, nous aimons aussi l'idée d'être quelqu'un d'autre pour un moment. Jouer, créer un personnage, choisir un costume, performer. KOSTUM est une collection joyeuse, et chaque pièce est sélectionnée pour son hybridité, son concept ou sa singularité.",
       body4: "Choisissez votre Kostum, louez une archive !",
       locationLabel: 'LOCALISATION',
-      location: ['Paris, France', 'Sur rendez-vous uniquement'],
+      location: ['Paris, France — catalogue numérique uniquement'],
       catalogLabel: 'CATALOGUE',
       catalog: ['Vêtements de créateurs', 'Pièces vintage & archive', 'Accessoires & costumes'],
       contactLabel: 'CONTACT',
@@ -88,7 +88,7 @@ export const translations = {
     },
   },
   en: {
-    nav: { wardrobe: 'VESTIAIRE', book: 'BOOK', about: 'ABOUT', cgu: 'T&C' },
+    nav: { wardrobe: 'VESTIAIRE', book: 'EDITO', about: 'ABOUT', cgu: 'T&C' },
     hero: { title: 'VESTIAIRE', sub: 'Fashion & Costumes collection for rent' },
     filters: {
       collection: 'COLLECTION',
@@ -116,7 +116,7 @@ export const translations = {
       cta: 'SEE ALL ITEMS',
     },
     book: {
-      label: 'BOOK',
+      label: 'EDITO',
       title: 'Book a piece',
       body1: 'For any booking, availability or pricing enquiry, contact us directly by email specifying the piece you need, the dates and the intended use.',
       body2: 'We reply within 24h.',
@@ -134,7 +134,7 @@ export const translations = {
       body3: 'At KOSTUM, we also love the idea of being someone else for a moment. Playing, creating a character, choosing a costume, performing. KOSTUM is a joyful collection, and each piece is selected for its hybridity, its concept or its singularity.',
       body4: 'Choose your Kostum, rent an archive!',
       locationLabel: 'LOCATION',
-      location: ['Paris, France', 'By appointment only'],
+      location: ['Paris, France — digital catalog only'],
       catalogLabel: 'CATALOGUE',
       catalog: ['Designer clothing', 'Vintage & archive pieces', 'Accessories & costumes'],
       contactLabel: 'CONTACT',
