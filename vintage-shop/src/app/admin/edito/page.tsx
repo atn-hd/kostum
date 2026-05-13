@@ -107,7 +107,7 @@ export default function EditoAdminPage() {
   if (!authChecked) {
     return (
       <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#333' }}>...</span>
+        <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#888' }}>...</span>
       </div>
     )
   }
@@ -118,21 +118,21 @@ export default function EditoAdminPage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e8e4dc', fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
       <style>{`
         .input-dark { background: transparent; border: 1px solid #1a1a1a; color: #e8e4dc; padding: 10px 14px; font-size: 11px; letter-spacing: 0.08em; font-family: inherit; width: 100%; outline: none; box-sizing: border-box; }
-        .input-dark::placeholder { color: #333; }
+        .input-dark::placeholder { color: #555; }
         .input-dark:focus { border-color: #333; }
       `}</style>
 
       <header style={{ borderBottom: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontSize: 16, letterSpacing: '0.25em' }}>KOSTUM</div>
-          <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginTop: 2 }}>BACK OFFICE — ÉDITO</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginTop: 2 }}>BACK OFFICE — ÉDITO</div>
         </div>
         <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-          <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', textDecoration: 'none' }}>VESTIAIRE</Link>
-          <Link href="/admin/parametres" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', textDecoration: 'none' }}>PARAMÈTRES</Link>
-          <Link href="/" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#444', textDecoration: 'none' }}>VITRINE</Link>
+          <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', textDecoration: 'none' }}>VESTIAIRE</Link>
+          <Link href="/admin/parametres" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', textDecoration: 'none' }}>PARAMÈTRES</Link>
+          <Link href="/" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', textDecoration: 'none' }}>VITRINE</Link>
           <button onClick={async () => { await supabase.auth.signOut(); router.push('/admin') }}
-            style={{ background: 'none', border: 'none', fontSize: 10, letterSpacing: '0.2em', color: '#444', cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ background: 'none', border: 'none', fontSize: 10, letterSpacing: '0.2em', color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}>
             DÉCONNEXION
           </button>
         </div>
@@ -143,11 +143,11 @@ export default function EditoAdminPage() {
 
           {/* Left: list */}
           <div>
-            <div style={{ fontSize: 10, letterSpacing: '0.3em', color: '#444', marginBottom: 24 }}>ENTRÉES EXISTANTES</div>
+            <div style={{ fontSize: 10, letterSpacing: '0.3em', color: '#888', marginBottom: 24 }}>ENTRÉES EXISTANTES</div>
             {loading ? (
-              <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333' }}>CHARGEMENT...</div>
+              <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888' }}>CHARGEMENT...</div>
             ) : entries.length === 0 ? (
-              <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333', padding: '40px 0' }}>AUCUNE ENTRÉE</div>
+              <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', padding: '40px 0' }}>AUCUNE ENTRÉE</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {entries.map(entry => (
@@ -160,9 +160,9 @@ export default function EditoAdminPage() {
                   }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 11, letterSpacing: '0.15em', color: '#e8e4dc' }}>
-                        {entry.title ? entry.title.toUpperCase() : <span style={{ color: '#333' }}>SANS TITRE</span>}
+                        {entry.title ? entry.title.toUpperCase() : <span style={{ color: '#888' }}>SANS TITRE</span>}
                       </div>
-                      <div style={{ fontSize: 10, letterSpacing: '0.1em', color: '#444', marginTop: 3 }}>
+                      <div style={{ fontSize: 10, letterSpacing: '0.1em', color: '#888', marginTop: 3 }}>
                         {entry.images.length} PHOTO{entry.images.length !== 1 ? 'S' : ''}
                       </div>
                     </div>
@@ -171,7 +171,7 @@ export default function EditoAdminPage() {
                       {editingId === entry.id ? 'ANNULER' : 'MODIFIER'}
                     </button>
                     <button onClick={() => deleteEntry(entry.id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.15em', color: '#3a2a2a' }}>
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.15em', color: '#664444' }}>
                       SUPPRIMER
                     </button>
                   </div>
@@ -182,13 +182,13 @@ export default function EditoAdminPage() {
 
           {/* Right: form */}
           <div>
-            <div style={{ fontSize: 10, letterSpacing: '0.3em', color: '#444', marginBottom: 24 }}>
+            <div style={{ fontSize: 10, letterSpacing: '0.3em', color: '#888', marginBottom: 24 }}>
               {isEditing ? 'MODIFIER L\'ENTRÉE' : 'NOUVELLE ENTRÉE'}
             </div>
             <form onSubmit={handleSave}>
               {/* Photos */}
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>PHOTOS</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 10 }}>PHOTOS</div>
                 {form.images.length > 0 && (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
                     {form.images.map((url, i) => (
@@ -207,7 +207,7 @@ export default function EditoAdminPage() {
                   style={{ border: `1px dashed ${dragging ? '#555' : '#222'}`, padding: '32px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s', position: 'relative' }}
                 >
                   <input type="file" accept="image/*" multiple onChange={e => e.target.files && uploadFiles(e.target.files)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
-                  <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333' }}>
+                  <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888' }}>
                     {uploading ? 'UPLOAD EN COURS...' : 'GLISSER LES PHOTOS ICI'}
                   </div>
                 </div>
@@ -216,24 +216,24 @@ export default function EditoAdminPage() {
 
               {/* Title */}
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>TITRE (OPTIONNEL)</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 8 }}>TITRE (OPTIONNEL)</div>
                 <input className="input-dark" value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Shooting printemps 2024" />
               </div>
 
               {/* Description */}
               <div style={{ marginBottom: 28 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>DESCRIPTION (OPTIONNEL)</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 8 }}>DESCRIPTION (OPTIONNEL)</div>
                 <textarea className="input-dark" value={form.description} onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Contexte, crédits, notes..." rows={3} style={{ resize: 'vertical' }} />
               </div>
 
               <div style={{ display: 'flex', gap: 12 }}>
                 <button type="submit" disabled={saving || uploading}
-                  style={{ flex: 1, background: saving ? 'transparent' : '#e8e4dc', border: '1px solid', borderColor: saving ? '#333' : '#e8e4dc', color: saving ? '#333' : '#0a0a0a', padding: '12px', fontSize: 11, letterSpacing: '0.2em', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+                  style={{ flex: 1, background: saving ? 'transparent' : '#e8e4dc', border: '1px solid', borderColor: saving ? '#333' : '#e8e4dc', color: saving ? '#666' : '#0a0a0a', padding: '12px', fontSize: 11, letterSpacing: '0.2em', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
                   {saving ? 'SAUVEGARDE...' : isEditing ? 'METTRE À JOUR' : 'PUBLIER'}
                 </button>
                 {isEditing && (
                   <button type="button" onClick={resetForm}
-                    style={{ background: 'transparent', border: '1px solid #1a1a1a', color: '#555', padding: '12px 20px', fontSize: 11, letterSpacing: '0.2em', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ background: 'transparent', border: '1px solid #1a1a1a', color: '#888', padding: '12px 20px', fontSize: 11, letterSpacing: '0.2em', cursor: 'pointer', fontFamily: 'inherit' }}>
                     ANNULER
                   </button>
                 )}

@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
       <div style={{ width: 320 }}>
         <div style={{ marginBottom: 48, textAlign: 'center' }}>
           <div style={{ fontSize: 18, letterSpacing: '0.3em', color: '#e8e4dc' }}>KOSTUM</div>
-          <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginTop: 4 }}>BACK OFFICE</div>
+          <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginTop: 4 }}>BACK OFFICE</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input

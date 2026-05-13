@@ -109,7 +109,7 @@ export default function ModifierPage() {
 
   const Toggle = ({ label, field, options }: { label: string, field: keyof typeof form, options: string[] }) => (
     <div style={{ marginBottom: 24 }}>
-      <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{label}</div>
+      <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 10 }}>{label}</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {options.map(opt => (
           <button
@@ -120,7 +120,7 @@ export default function ModifierPage() {
               background: form[field] === opt ? '#e8e4dc' : 'transparent',
               border: '1px solid',
               borderColor: form[field] === opt ? '#e8e4dc' : '#2a2a2a',
-              color: form[field] === opt ? '#0a0a0a' : '#555',
+              color: form[field] === opt ? '#0a0a0a' : '#888',
               padding: '7px 14px',
               fontSize: 10,
               letterSpacing: '0.12em',
@@ -136,22 +136,22 @@ export default function ModifierPage() {
 
   if (fetching) return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>CHARGEMENT...</span>
+      <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#888' }}>CHARGEMENT...</span>
     </div>
   )
 
   if (notFound) return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-      <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#444' }}>PIÈCE INTROUVABLE</span>
-      <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', textDecoration: 'none' }}>← RETOUR AU DASHBOARD</Link>
+      <span style={{ fontSize: 11, letterSpacing: '0.2em', color: '#888' }}>PIÈCE INTROUVABLE</span>
+      <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', textDecoration: 'none' }}>← RETOUR AU DASHBOARD</Link>
     </div>
   )
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <header style={{ borderBottom: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', alignItems: 'center', gap: 24 }}>
-        <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#444', textDecoration: 'none' }}>← RETOUR</Link>
-        <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#555' }}>MODIFIER LE PRODUIT</span>
+        <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', textDecoration: 'none' }}>← RETOUR</Link>
+        <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#e8e4dc' }}>MODIFIER LE PRODUIT</span>
       </header>
 
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '48px 40px' }}>
@@ -159,7 +159,7 @@ export default function ModifierPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
             <div>
               <div style={{ marginBottom: 32 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>PHOTOS</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 10 }}>PHOTOS</div>
                 {images.length > 0 && (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
                     {images.map((url, i) => (
@@ -181,7 +181,7 @@ export default function ModifierPage() {
                   style={{ border: `1px dashed ${dragging ? '#555' : '#222'}`, padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s', position: 'relative' }}
                 >
                   <input type="file" accept="image/*" multiple onChange={e => e.target.files && uploadFiles(e.target.files)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
-                  <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#333' }}>
+                  <div style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888' }}>
                     {uploading ? 'UPLOAD EN COURS...' : 'GLISSER LES PHOTOS ICI — MULTIPLE UPLOAD SUPPORTÉ'}
                   </div>
                 </div>
@@ -191,12 +191,12 @@ export default function ModifierPage() {
               </div>
 
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>NOM DU VÊTEMENT</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 8 }}>NOM DU VÊTEMENT</div>
                 <input className="input-dark" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Chemise L bleue Jean Paul Gaultier" required />
               </div>
 
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>DESCRIPTION</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 8 }}>DESCRIPTION</div>
                 <textarea className="input-dark" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Chemise en soie, col ouvert..." rows={4} style={{ resize: 'none' }} />
               </div>
             </div>
@@ -208,19 +208,19 @@ export default function ModifierPage() {
               <Toggle label="TAILLE" field="size" options={SIZES} />
 
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 8 }}>TARIF LOCATION (€)</div>
+                <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 8 }}>TARIF LOCATION (€)</div>
                 <input type="number" min="0" step="5" className="input-dark" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="150" style={{ width: 120 }} />
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
                 <input type="checkbox" id="available" checked={form.is_available} onChange={e => setForm({ ...form, is_available: e.target.checked })} style={{ width: 14, height: 14, accentColor: '#e8e4dc', cursor: 'pointer' }} />
-                <label htmlFor="available" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#555', cursor: 'pointer' }}>DISPONIBLE À LA LOCATION</label>
+                <label htmlFor="available" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', cursor: 'pointer' }}>DISPONIBLE À LA LOCATION</label>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || uploading}
-                style={{ width: '100%', background: loading ? 'transparent' : '#e8e4dc', border: '1px solid', borderColor: loading ? '#333' : '#e8e4dc', color: loading ? '#333' : '#0a0a0a', padding: '14px', fontSize: 11, letterSpacing: '0.2em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                style={{ width: '100%', background: loading ? 'transparent' : '#e8e4dc', border: '1px solid', borderColor: loading ? '#333' : '#e8e4dc', color: loading ? '#666' : '#0a0a0a', padding: '14px', fontSize: 11, letterSpacing: '0.2em', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
               >
                 {loading ? 'SAUVEGARDE...' : 'SAUVEGARDER'}
               </button>

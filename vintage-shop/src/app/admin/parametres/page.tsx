@@ -107,15 +107,15 @@ export default function ParametresPage() {
   }
 
   const label = (txt: string) => (
-    <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444', marginBottom: 10 }}>{txt}</div>
+    <div style={{ fontSize: 10, letterSpacing: '0.25em', color: '#888', marginBottom: 10 }}>{txt}</div>
   )
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <header style={{ borderBottom: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#444', textDecoration: 'none' }}>← RETOUR</Link>
-          <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#555' }}>PARAMÈTRES</span>
+          <Link href="/admin/dashboard" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#888', textDecoration: 'none' }}>← RETOUR</Link>
+          <span style={{ fontSize: 11, letterSpacing: '0.25em', color: '#e8e4dc' }}>PARAMÈTRES</span>
         </div>
       </header>
 
@@ -212,9 +212,9 @@ export default function ParametresPage() {
                 <span style={{ fontSize: 10, letterSpacing: '0.12em', color: '#888', padding: '7px 12px' }}>{d}</span>
                 <button
                   onClick={() => removeDesigner(d)}
-                  style={{ background: 'none', border: 'none', borderLeft: '1px solid #2a2a2a', color: '#444', padding: '7px 10px', cursor: 'pointer', fontSize: 10, fontFamily: 'inherit', transition: 'color 0.2s' }}
+                  style={{ background: 'none', border: 'none', borderLeft: '1px solid #2a2a2a', color: '#666', padding: '7px 10px', cursor: 'pointer', fontSize: 10, fontFamily: 'inherit', transition: 'color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#cc4444')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#444')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#666')}
                 >✕</button>
               </div>
             ))}
@@ -248,9 +248,9 @@ export default function ParametresPage() {
                 <span style={{ fontSize: 10, letterSpacing: '0.12em', color: '#888', padding: '7px 12px' }}>{c}</span>
                 <button
                   onClick={() => removeCategory(c)}
-                  style={{ background: 'none', border: 'none', borderLeft: '1px solid #2a2a2a', color: '#444', padding: '7px 10px', cursor: 'pointer', fontSize: 10, fontFamily: 'inherit', transition: 'color 0.2s' }}
+                  style={{ background: 'none', border: 'none', borderLeft: '1px solid #2a2a2a', color: '#666', padding: '7px 10px', cursor: 'pointer', fontSize: 10, fontFamily: 'inherit', transition: 'color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#cc4444')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#444')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#666')}
                 >✕</button>
               </div>
             ))}

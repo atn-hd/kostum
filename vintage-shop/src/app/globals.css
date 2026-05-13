@@ -50,7 +50,7 @@ body {
     font-family: inherit;
   }
   .input-dark:focus { border-color: #555; }
-  .input-dark::placeholder { color: #444; }
+  .input-dark::placeholder { color: #555; }
   .btn-dark {
     background: transparent;
     border: 1px solid #2a2a2a;
