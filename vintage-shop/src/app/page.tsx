@@ -381,8 +381,7 @@ export default function HomePage() {
         {/* Header */}
         <div className="section-inner" style={{ padding: '80px 40px 48px' }}>
           <p style={{ fontSize: 9, letterSpacing: '0.35em', color: '#444', marginBottom: 28 }}>{t.book.label}</p>
-          <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 24, lineHeight: 1.15 }}>{t.book.title}</h2>
-          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, margin: 0 }}>{t.book.body1}</p>
+          <h2 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', color: text, marginBottom: 0, lineHeight: 1.15 }}>{t.book.title}</h2>
         </div>
 
         {/* Photo grid */}
@@ -403,6 +402,7 @@ export default function HomePage() {
 
         {/* Contact CTA */}
         <div className="section-inner" style={{ padding: '48px 40px 80px' }}>
+          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 16 }}>{t.book.body1}</p>
           <p style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, lineHeight: 2.2, marginBottom: 44 }}>{t.book.body2}</p>
           <a href="mailto:contact@kostum-archives.com" className="cta-link"
             style={{ '--text': text, '--bg': bg, border: `1px solid ${text}`, color: text, padding: '10px 28px', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none' } as React.CSSProperties}
