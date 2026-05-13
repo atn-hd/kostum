@@ -127,7 +127,8 @@ export default function HomePage() {
           .hero-section { padding: 40px 20px 28px !important; flex-direction: column !important; gap: 16px !important; align-items: flex-start !important; }
           .hero-title { font-size: 28px !important; }
           .hero-sub { text-align: left !important; font-size: 11px !important; }
-          .filters-section { padding: 0 20px 16px !important; }
+          .filters-section { padding: 16px 20px !important; }
+          .filters-row { margin-bottom: 14px !important; }
           .footer-inner { padding: 24px 20px !important; }
           .section-inner { padding: 60px 20px !important; }
           .section-two-col { flex-direction: column !important; gap: 40px !important; }
@@ -227,7 +228,7 @@ export default function HomePage() {
 
       {/* Filters */}
       <section id="vestiaire" className="filters-section" style={{ padding: '16px 40px', borderBottom: `1px solid ${border}` }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div className="filters-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontSize: 10, letterSpacing: '0.25em', color: '#444' }}>
             {t.filters.collection}&ensp;—&ensp;
             <span style={{ color: text }}>{filtered.length} {filtered.length !== 1 ? t.filters.pieces : t.filters.piece}</span>
