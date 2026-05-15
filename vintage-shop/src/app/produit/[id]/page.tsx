@@ -2,7 +2,6 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { supabase, Product } from '@/lib/supabase'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useLang } from '@/lib/useLang'
@@ -124,7 +123,7 @@ export default function ProductPage() {
               {images.map((img, i) => (
                 <button key={i} onClick={() => setActiveImage(i)} className={`thumb-btn${activeImage === i ? ' active' : ''}`}>
                   <div className="thumb" style={{ width: 52, height: 70, position: 'relative', overflow: 'hidden', background: '#ddd' }}>
-                    <Image src={img} alt={`${product.name} ${i + 1}`} fill sizes="52px" style={{ objectFit: 'cover' }} />
+                    <img src={img} alt={`${product.name} ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
                   </div>
                 </button>
               ))}
