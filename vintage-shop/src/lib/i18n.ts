@@ -187,12 +187,18 @@ const CATEGORY_FR_TO_EN: Record<string, string> = {
   tops: 'tops', pantalons: 'pants', robes: 'dresses', bijoux: 'jewelry',
   accessoires: 'accessories', manteaux: 'coats', ensemble: 'set',
   autres: 'others', autre: 'others', other: 'others', others: 'others',
+  costumes: 'costumes', skirt: 'skirt', skirts: 'skirts',
+  dresses: 'dresses', dress: 'dresses', shirts: 'tops',
+  accessories: 'accessories', coats: 'coats', jewelry: 'jewelry',
+  pants: 'pants', set: 'set',
 }
 
 const CATEGORY_EN_TO_FR: Record<string, string> = {
   tops: 'tops', pants: 'pantalons', dresses: 'robes', jewelry: 'bijoux',
   accessories: 'accessoires', coats: 'manteaux', set: 'ensemble',
   others: 'autres', other: 'autres',
+  costumes: 'costumes', skirt: 'jupe', skirts: 'jupes',
+  dress: 'robes',
 }
 
 export function translateColor(value: string, lang: Lang): string {
