@@ -185,7 +185,14 @@ const COLOR_FR_TO_EN: Record<string, string> = {
 
 const CATEGORY_FR_TO_EN: Record<string, string> = {
   tops: 'tops', pantalons: 'pants', robes: 'dresses', bijoux: 'jewelry',
-  accessoires: 'accessories', manteaux: 'coats', ensemble: 'set', autres: 'others',
+  accessoires: 'accessories', manteaux: 'coats', ensemble: 'set',
+  autres: 'others', autre: 'others', other: 'others', others: 'others',
+}
+
+const CATEGORY_EN_TO_FR: Record<string, string> = {
+  tops: 'tops', pants: 'pantalons', dresses: 'robes', jewelry: 'bijoux',
+  accessories: 'accessoires', coats: 'manteaux', set: 'ensemble',
+  others: 'autres', other: 'autres',
 }
 
 export function translateColor(value: string, lang: Lang): string {
@@ -194,6 +201,7 @@ export function translateColor(value: string, lang: Lang): string {
 }
 
 export function translateCategory(value: string, lang: Lang): string {
-  if (lang === 'fr') return value
-  return CATEGORY_FR_TO_EN[value.toLowerCase()] ?? value
+  const key = value.toLowerCase()
+  if (lang === 'fr') return CATEGORY_EN_TO_FR[key] ?? value
+  return CATEGORY_FR_TO_EN[key] ?? value
 }
