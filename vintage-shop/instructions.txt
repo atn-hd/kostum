@@ -1,0 +1,29 @@
+Dans src/app/page.tsx, corrige définitivement les bugs de grille produits :
+
+1. Remplace display:grid par CSS Grid avec align-items: stretch pour que 
+toutes les cartes aient la même hauteur par ligne
+
+2. Dans le <style>, remplace les règles grid par :
+.grid-products {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-left: 1px solid #1a1a1a;
+  border-top: 1px solid #1a1a1a;
+}
+@media (max-width: 768px) {
+  .grid-products { grid-template-columns: repeat(2, 1fr) !important; }
+}
+.product-card {
+  border-right: 1px solid #1a1a1a !important;
+  border-bottom: 1px solid #1a1a1a !important;
+  display: flex;
+  flex-direction: column;
+}
+
+3. Dans le composant ProductCard, le div de la photo garde aspect-ratio 3/4,
+et le div des infos produit en dessous prend flex:1 pour s'étirer.
+
+4. Supprime le style grid inline sur le div .grid-products dans le JSX 
+(garder seulement className="grid-products grid-animate").
+
+5. Dans le Link wrapper du ProductCard, ajoute style={{display:'flex', flexDirection:'column', height:'100%'}}
