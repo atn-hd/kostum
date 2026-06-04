@@ -5,15 +5,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const nextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'cfszzkoqokxwlflvmpgr.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-    ],
-    minimumCacheTTL: 3600,
-    formats: ['image/webp', 'image/avif'],
+    unoptimized: true,
   },
 }
 module.exports = nextConfig

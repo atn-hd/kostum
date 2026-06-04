@@ -5,7 +5,6 @@ import { supabase, Product, Edito } from '@/lib/supabase'
 import Link from 'next/link'
 import { useLang } from '@/lib/useLang'
 import { translations, translateColor, translateCategory } from '@/lib/i18n'
-import Image from 'next/image'
 import { optimizeImage } from '@/lib/cloudinary'
 
 type ActiveDims = { types: boolean, designers: boolean, colors: boolean, sizes: boolean }
@@ -521,9 +520,9 @@ function ProductCard({ product, index, bg, text, border, muted, lang }: { produc
         <div style={{ position: 'relative', aspectRatio: '3/4', flexShrink: 0, background: '#0d0d0d', overflow: 'hidden' }}>
           {firstImage ? (
             <>
-              <Image src={optimizeImage(firstImage)} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
+              <img src={optimizeImage(firstImage)} alt={product.name ?? ''} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
               {secondImage && (
-                <Image src={optimizeImage(secondImage)} alt={product.name ?? ''} fill sizes="(max-width: 768px) 50vw, 33vw" style={{ objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
+                <img src={optimizeImage(secondImage)} alt={product.name ?? ''} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
               )}
             </>
           ) : (
