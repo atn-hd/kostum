@@ -95,7 +95,7 @@ export default function DashboardPage() {
               <div key={product.id} style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '16px 0', borderBottom: '1px solid #1a1a1a' }}>
                 <div style={{ width: 48, height: 64, background: '#111', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                   {product.images?.[0]
-                    ? <img src={optimizeImage(product.images[0])} alt={product.name ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+                    ? <img src={optimizeImage(product.images[0])} alt={product.name ?? ''} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
                     : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: 18 }}>—</div>
                   }
                 </div>

@@ -520,9 +520,9 @@ function ProductCard({ product, index, bg, text, border, muted, lang }: { produc
         <div style={{ position: 'relative', aspectRatio: '3/4', flexShrink: 0, background: '#0d0d0d', overflow: 'hidden' }}>
           {firstImage ? (
             <>
-              <img src={optimizeImage(firstImage)} alt={product.name ?? ''} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
+              <img src={optimizeImage(firstImage)} alt={product.name ?? ''} loading="lazy" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered && secondImage ? 0 : 1 }} />
               {secondImage && (
-                <img src={optimizeImage(secondImage)} alt={product.name ?? ''} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
+                <img src={optimizeImage(secondImage)} alt={product.name ?? ''} loading="lazy" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s ease', opacity: hovered ? 1 : 0 }} />
               )}
             </>
           ) : (

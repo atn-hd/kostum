@@ -124,7 +124,7 @@ export default function ProductPage() {
               {images.map((img, i) => (
                 <button key={i} onClick={() => setActiveImage(i)} className={`thumb-btn${activeImage === i ? ' active' : ''}`}>
                   <div className="thumb" style={{ width: 52, height: 70, position: 'relative', overflow: 'hidden', background: '#ddd' }}>
-                    <img src={optimizeImage(img)} alt={`${product.name} ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+                    <img src={optimizeImage(img)} alt={`${product.name} ${i + 1}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
                   </div>
                 </button>
               ))}
