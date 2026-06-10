@@ -51,17 +51,21 @@ export default function EditoAdminPage() {
     const urls: string[] = []
     let failed = 0
     for (const file of Array.from(files)) {
-      const ext = file.name.split('.').pop()
-      const fileName = `edito-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage.from('products').upload(fileName, file, { contentType: file.type })
-      if (error) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await fetch('/api/upload-cloudinary', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (data.url) {
+          urls.push(data.url)
+        } else {
+          failed++
+        }
+      } catch {
         failed++
-      } else {
-        const { data } = supabase.storage.from('products').getPublicUrl(fileName)
-        urls.push(data.publicUrl)
       }
     }
-    if (failed > 0) setUploadError(`${failed} image(s) non uploadée(s). Vérifiez le format.`)
+    if (failed > 0) setUploadError(`${failed} image(s) non uploadée(s). Réessayez.`)
     setForm(prev => ({ ...prev, images: [...prev.images, ...urls] }))
     setUploading(false)
   }

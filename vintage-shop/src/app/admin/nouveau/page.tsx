@@ -50,18 +50,22 @@ export default function NouvelArticlePage() {
     const urls: string[] = []
     let failed = 0
     for (const file of Array.from(files)) {
-      const ext = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage.from('products').upload(fileName, file, { contentType: file.type })
-      if (error) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await fetch('/api/upload-cloudinary', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (data.url) {
+          urls.push(data.url)
+        } else {
+          failed++
+        }
+      } catch {
         failed++
-      } else {
-        const { data } = supabase.storage.from('products').getPublicUrl(fileName)
-        urls.push(data.publicUrl)
       }
     }
     if (failed > 0) {
-      setUploadError(`${failed} image(s) n'ont pas pu être uploadées. Vérifiez le format (JPG, PNG, WEBP) et réessayez.`)
+      setUploadError(`${failed} image(s) n'ont pas pu être uploadées. Réessayez.`)
     }
     setImages(prev => [...prev, ...urls])
     setUploading(false)
