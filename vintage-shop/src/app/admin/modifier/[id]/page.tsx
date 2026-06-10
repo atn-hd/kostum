@@ -75,13 +75,17 @@ export default function ModifierPage() {
         if (data.url) {
           urls.push(data.url)
         } else {
+          console.error('Upload error:', data.error)
+          setUploadError(`Erreur : ${data.error || 'inconnue'}`)
           failed++
         }
-      } catch {
+      } catch (err: any) {
+        console.error('Fetch error:', err)
+        setUploadError(`Erreur réseau : ${err.message}`)
         failed++
       }
     }
-    if (failed > 0) {
+    if (failed > 0 && !uploadError) {
       setUploadError(`${failed} image(s) n'ont pas pu être uploadées. Réessayez.`)
     }
     setImages(prev => [...prev, ...urls])
