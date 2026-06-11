@@ -58,7 +58,12 @@ export default function ModifierPage() {
       color: data.color || '',
       is_available: data.is_available ?? true,
     })
-    setImages(data.images || [])
+    // Filtre les vieilles URLs Supabase Storage (ancien projet supprimé)
+    // et ne conserve que les URLs Cloudinary valides
+    const validImages = (data.images || []).filter((url: string) =>
+      url.includes('cloudinary.com')
+    )
+    setImages(validImages)
     setFetching(false)
   }
 
@@ -94,18 +99,14 @@ export default function ModifierPage() {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-    const payload = {
+    const { error } = await supabase.from('products').update({
       ...form,
       price: form.price ? parseFloat(form.price) : null,
       images,
-    }
-    console.log('[handleSubmit] payload envoyé à Supabase :', payload)
-    console.log('[handleSubmit] images array :', images)
-    const { error } = await supabase.from('products').update(payload).eq('id', id)
+    }).eq('id', id)
     if (!error) {
       router.push('/admin/dashboard')
     } else {
-      console.error('[handleSubmit] Supabase error :', error)
       alert(`Erreur sauvegarde : ${error.message}`)
     }
     setLoading(false)
