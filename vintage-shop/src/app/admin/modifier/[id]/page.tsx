@@ -99,11 +99,21 @@ export default function ModifierPage() {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-    const { error } = await supabase.from('products').update({
-      ...form,
-      price: form.price ? parseFloat(form.price) : null,
-      images,
-    }).eq('id', id)
+    const { data: updated, error } = await supabase
+      .from('products')
+      .update({
+        ...form,
+        price: form.price ? parseFloat(form.price) : null,
+        images,
+      })
+      .eq('id', id)
+      .select('id, images')
+
+    console.log('[save] id utilisé :', id)
+    console.log('[save] images envoyées :', images)
+    console.log('[save] résultat Supabase :', updated)
+    console.log('[save] erreur Supabase :', error)
+
     if (!error) {
       router.push('/admin/dashboard')
     } else {
