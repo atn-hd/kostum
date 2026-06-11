@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { supabase, Edito } from '@/lib/supabase'
+import { uploadToCloudinary } from '@/lib/uploadToCloudinary'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -52,20 +53,15 @@ export default function EditoAdminPage() {
     let failed = 0
     for (const file of Array.from(files)) {
       try {
-        const formData = new FormData()
-        formData.append('file', file)
-        const res = await fetch('/api/upload-cloudinary', { method: 'POST', body: formData })
-        const data = await res.json()
-        if (data.url) {
-          urls.push(data.url)
-        } else {
-          failed++
-        }
-      } catch {
+        const url = await uploadToCloudinary(file, 'kostum/edito')
+        urls.push(url)
+      } catch (err: any) {
+        console.error('Upload error:', err)
         failed++
+        setUploadError(`Erreur upload : ${err.message}`)
       }
     }
-    if (failed > 0) setUploadError(`${failed} image(s) non uploadée(s). Réessayez.`)
+    if (failed > 0 && !uploadError) setUploadError(`${failed} image(s) non uploadée(s).`)
     setForm(prev => ({ ...prev, images: [...prev.images, ...urls] }))
     setUploading(false)
   }
