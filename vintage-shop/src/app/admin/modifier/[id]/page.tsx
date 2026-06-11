@@ -99,25 +99,22 @@ export default function ModifierPage() {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-    const { data: updated, error } = await supabase
-      .from('products')
-      .update({
+    const res = await fetch('/api/admin/save-product', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
         ...form,
         price: form.price ? parseFloat(form.price) : null,
         images,
-      })
-      .eq('id', id)
-      .select('id, images')
+      }),
+    })
+    const result = await res.json()
 
-    console.log('[save] id utilisé :', id)
-    console.log('[save] images envoyées :', images)
-    console.log('[save] résultat Supabase :', updated)
-    console.log('[save] erreur Supabase :', error)
-
-    if (!error) {
+    if (res.ok) {
       router.push('/admin/dashboard')
     } else {
-      alert(`Erreur sauvegarde : ${error.message}`)
+      alert(`Erreur sauvegarde : ${result.error}`)
     }
     setLoading(false)
   }
