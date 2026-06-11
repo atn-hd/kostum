@@ -94,15 +94,19 @@ export default function ModifierPage() {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-    const { error } = await supabase.from('products').update({
+    const payload = {
       ...form,
       price: form.price ? parseFloat(form.price) : null,
       images,
-    }).eq('id', id)
+    }
+    console.log('[handleSubmit] payload envoyé à Supabase :', payload)
+    console.log('[handleSubmit] images array :', images)
+    const { error } = await supabase.from('products').update(payload).eq('id', id)
     if (!error) {
       router.push('/admin/dashboard')
     } else {
-      alert('Une erreur est survenue lors de la sauvegarde. Réessayez.')
+      console.error('[handleSubmit] Supabase error :', error)
+      alert(`Erreur sauvegarde : ${error.message}`)
     }
     setLoading(false)
   }
