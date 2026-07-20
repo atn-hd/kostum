@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     } else {
       const { error } = await supabaseAdmin
         .from('edito')
-        .insert([{ title: title || null, description: description || null, images }])
+        .insert([{ id: crypto.randomUUID(), title: title || null, description: description || null, images }])
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
