@@ -76,20 +76,16 @@ export default function EditoAdminPage() {
     e.preventDefault()
     if (form.images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setSaving(true)
-    if (editingId) {
-      const { error } = await supabase.from('edito').update({
-        title: form.title || null,
-        description: form.description || null,
-        images: form.images,
-      }).eq('id', editingId)
-      if (error) alert('Erreur lors de la mise à jour.')
-    } else {
-      const { error } = await supabase.from('edito').insert([{
-        title: form.title || null,
-        description: form.description || null,
-        images: form.images,
-      }])
-      if (error) alert('Erreur lors de la création.')
+    const res = await fetch('/api/admin/save-edito', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editingId, title: form.title, description: form.description, images: form.images }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      alert(`Erreur : ${data.error}`)
+      setSaving(false)
+      return
     }
     setSaving(false)
     resetForm()
@@ -98,8 +94,13 @@ export default function EditoAdminPage() {
 
   const deleteEntry = async (id: string) => {
     if (!confirm('Supprimer cet édito ?')) return
-    const { error } = await supabase.from('edito').delete().eq('id', id)
-    if (error) { alert('Impossible de supprimer.'); return }
+    const res = await fetch('/api/admin/save-edito', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    const data = await res.json()
+    if (!res.ok) { alert(`Impossible de supprimer : ${data.error}`); return }
     if (editingId === id) resetForm()
     loadEntries()
   }

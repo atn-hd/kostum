@@ -53,8 +53,9 @@ export async function uploadToCloudinary(file: File, folder = 'kostum'): Promise
 
   // 1. Get a short-lived signature from our server (tiny request, no file data)
   const sigRes = await fetch(`/api/cloudinary-sign?folder=${encodeURIComponent(folder)}`)
-  if (!sigRes.ok) throw new Error('Impossible d\'obtenir la signature Cloudinary')
-  const { timestamp, signature, api_key, cloud_name } = await sigRes.json()
+  const sigData = await sigRes.json()
+  if (!sigRes.ok) throw new Error(sigData.error || 'Impossible d\'obtenir la signature Cloudinary')
+  const { timestamp, signature, api_key, cloud_name } = sigData
 
   // 2. Upload the file directly to Cloudinary (browser → Cloudinary, no Vercel limit)
   const formData = new FormData()
