@@ -41,3 +41,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { id } = await req.json()
+    if (!id) return NextResponse.json({ error: 'Missing product id' }, { status: 400 })
+
+    const { error } = await supabaseAdmin.from('products').delete().eq('id', id)
+    if (error) {
+      console.error('save-product delete error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+    return NextResponse.json({ ok: true })
+  } catch (err: any) {
+    console.error('save-product delete exception:', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}

@@ -35,11 +35,12 @@ export default function DashboardPage() {
   }
 
   const toggleAvailability = async (id: string, current: boolean) => {
-    const { error } = await supabase
-      .from('products')
-      .update({ is_available: !current })
-      .eq('id', id)
-    if (error) {
+    const res = await fetch('/api/admin/save-product', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, is_available: !current }),
+    })
+    if (!res.ok) {
       alert('Impossible de modifier la disponibilité. Réessayez.')
       return
     }
@@ -48,8 +49,12 @@ export default function DashboardPage() {
 
   const deleteProduct = async (id: string) => {
     if (!confirm('Supprimer cette pièce ?')) return
-    const { error } = await supabase.from('products').delete().eq('id', id)
-    if (error) {
+    const res = await fetch('/api/admin/save-product', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) {
       alert('Impossible de supprimer cette pièce. Réessayez.')
       return
     }
