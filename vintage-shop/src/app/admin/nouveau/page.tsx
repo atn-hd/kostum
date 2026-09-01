@@ -77,12 +77,16 @@ export default function NouvelArticlePage() {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-    const { error } = await supabase.from('products').insert([{
-      ...form,
-      price: form.price ? parseFloat(form.price) : null,
-      images,
-    }])
-    if (!error) {
+    const res = await fetch('/api/admin/save-product', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...form,
+        price: form.price ? parseFloat(form.price) : null,
+        images,
+      }),
+    })
+    if (res.ok) {
       router.push('/admin/dashboard')
     } else {
       alert('Une erreur est survenue lors de la publication. Réessayez.')

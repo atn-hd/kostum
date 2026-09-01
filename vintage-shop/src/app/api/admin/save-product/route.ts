@@ -12,17 +12,32 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { id, ...fields } = body
 
-    if (!id) return NextResponse.json({ error: 'Missing product id' }, { status: 400 })
+    if (id) {
+      const { data, error } = await supabaseAdmin
+        .from('products')
+        .update(fields)
+        .eq('id', id)
+        .select('id, images')
+
+      if (error) {
+        console.error('save-product update error:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      return NextResponse.json({ data })
+    }
 
     const { data, error } = await supabaseAdmin
       .from('products')
-      .update(fields)
-      .eq('id', id)
+      .insert([{ id: crypto.randomUUID(), ...fields }])
       .select('id, images')
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('save-product insert error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
     return NextResponse.json({ data })
   } catch (err: any) {
+    console.error('save-product exception:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
