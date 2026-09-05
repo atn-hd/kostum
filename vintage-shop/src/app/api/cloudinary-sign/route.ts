@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v2 as cloudinary } from 'cloudinary'
+import { requireAuth } from '@/lib/requireAuth'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,6 +9,8 @@ cloudinary.config({
 })
 
 export async function GET(req: NextRequest) {
+  if (!(await requireAuth(req))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+
   if (!process.env.CLOUDINARY_API_SECRET || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_CLOUD_NAME) {
     return NextResponse.json(
       { error: 'Variables Cloudinary manquantes (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)' },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/requireAuth'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await requireAuth(req))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+
     const body = await req.json()
     const { id, title, description, images } = body
 
@@ -32,6 +35,8 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    if (!(await requireAuth(req))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
     const { error } = await supabaseAdmin.from('edito').delete().eq('id', id)

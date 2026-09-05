@@ -14,8 +14,7 @@ export default function AdminLoginPage() {
   const handleLogin = async () => {
     setLoading(true)
     setError('')
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    console.log('réponse supabase', data, error)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError(error.message)
     } else {

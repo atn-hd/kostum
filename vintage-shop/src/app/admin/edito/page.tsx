@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { supabase, Edito } from '@/lib/supabase'
 import { uploadToCloudinary } from '@/lib/uploadToCloudinary'
+import { authFetch } from '@/lib/authFetch'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -76,7 +77,7 @@ export default function EditoAdminPage() {
     e.preventDefault()
     if (form.images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setSaving(true)
-    const res = await fetch('/api/admin/save-edito', {
+    const res = await authFetch('/api/admin/save-edito', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: editingId, title: form.title, description: form.description, images: form.images }),
@@ -94,7 +95,7 @@ export default function EditoAdminPage() {
 
   const deleteEntry = async (id: string) => {
     if (!confirm('Supprimer cet édito ?')) return
-    const res = await fetch('/api/admin/save-edito', {
+    const res = await authFetch('/api/admin/save-edito', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),

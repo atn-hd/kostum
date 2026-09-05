@@ -1,3 +1,5 @@
+import { authFetch } from './authFetch'
+
 const MAX_BYTES = 9 * 1024 * 1024  // 9 MB — marge sous la limite Cloudinary gratuite (10 MB)
 const MAX_DIM = 4000                 // px max en largeur ou hauteur
 
@@ -52,7 +54,7 @@ export async function uploadToCloudinary(file: File, folder = 'kostum'): Promise
   const fileToUpload = await compressIfNeeded(file)
 
   // 1. Get a short-lived signature from our server (tiny request, no file data)
-  const sigRes = await fetch(`/api/cloudinary-sign?folder=${encodeURIComponent(folder)}`)
+  const sigRes = await authFetch(`/api/cloudinary-sign?folder=${encodeURIComponent(folder)}`)
   const sigData = await sigRes.json()
   if (!sigRes.ok) throw new Error(sigData.error || 'Impossible d\'obtenir la signature Cloudinary')
   const { timestamp, signature, api_key, cloud_name } = sigData

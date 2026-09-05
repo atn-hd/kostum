@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { supabase, Product } from '@/lib/supabase'
 import { optimizeImage } from '@/lib/cloudinary'
+import { authFetch } from '@/lib/authFetch'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -35,7 +36,7 @@ export default function DashboardPage() {
   }
 
   const toggleAvailability = async (id: string, current: boolean) => {
-    const res = await fetch('/api/admin/save-product', {
+    const res = await authFetch('/api/admin/save-product', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, is_available: !current }),
@@ -49,7 +50,7 @@ export default function DashboardPage() {
 
   const deleteProduct = async (id: string) => {
     if (!confirm('Supprimer cette pièce ?')) return
-    const res = await fetch('/api/admin/save-product', {
+    const res = await authFetch('/api/admin/save-product', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),

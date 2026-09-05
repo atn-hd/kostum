@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/requireAuth'
 
 // Service role client — bypasses RLS, server-side only, never exposed to the browser
 const supabaseAdmin = createClient(
@@ -9,6 +10,8 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await requireAuth(req))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+
     const body = await req.json()
     const { id, ...fields } = body
 
@@ -44,6 +47,8 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    if (!(await requireAuth(req))) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'Missing product id' }, { status: 400 })
 

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { uploadToCloudinary } from '@/lib/uploadToCloudinary'
+import { authFetch } from '@/lib/authFetch'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -77,7 +78,7 @@ export default function NouvelArticlePage() {
     e.preventDefault()
     if (images.length === 0) { alert('Ajoutez au moins une photo.'); return }
     setLoading(true)
-    const res = await fetch('/api/admin/save-product', {
+    const res = await authFetch('/api/admin/save-product', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
